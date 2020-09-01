@@ -1,7 +1,8 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
-public class HPancakeSortNode {
+public class HPancakeSortNode extends HSearchNode {
 	// The cumulative cost of reaching this node given the sequence of previous flips, i.e.
 	int cost;
 
@@ -48,10 +49,8 @@ public class HPancakeSortNode {
 	 * copy for each cloned node.
 	 */
 	public HPancakeSortNode clone() {
-		HPancakeSortNode copy = (HPancakeSortNode) this.clone();
-		for (int i = 0; i < this.pancake.length; i++) {
-			copy.pancake[i] = this.pancake[i];
-		}
+		HPancakeSortNode copy = (HPancakeSortNode) super.clone();
+		copy.pancake = pancake.clone();
 		copy.lastFlip = this.lastFlip;
 		copy.cost = this.cost;
 		return copy;
@@ -67,6 +66,8 @@ public class HPancakeSortNode {
 		for (int i = 2; i <= this.pancake.length; i++) {
 			HPancakeSortNode child = clone();
 			child.flip(i);
+			children.add(child);
+//			System.out.println(child);
 		}
 		
 		return children;
@@ -85,8 +86,8 @@ public class HPancakeSortNode {
 		// Reverse order of the first n pancake!
 		for (int i = 0; i < n / 2; i++) {
 			int tmp = pancake[i];
-			pancake[i] = pancake[n - i];
-			pancake[n - i] = tmp;
+			pancake[i] = pancake[n - i - 1];
+			pancake[n - i - 1] = tmp;
 		}
 	}
 	
@@ -105,6 +106,14 @@ public class HPancakeSortNode {
 	 * @return
 	 */
 	public static HPancakeSortNode getGoalNode(int[] pancake) {
+		
+
+		HSearcher searcher = new BestFirstSearcher(new AStarComparator());
+		HSearchNode root = new HPancakeSortNode(pancake);
+		
+		if (searcher.search(root)) {
+			return (HPancakeSortNode) searcher.getGoalNode();
+		}
 		return null;
 	}
 	
@@ -114,7 +123,12 @@ public class HPancakeSortNode {
 	 * @return
 	 */
 	public double getH() {
-		return 0;
+		int Hcost = 0;
+		for (int i = 0; i < pancake.length - 1; i++) {
+			Hcost += Math.abs(pancake[i + 1] - pancake[i]);
+		}
+		return Hcost;
+//		return 0;
 	}
 		
 	/**
@@ -122,7 +136,7 @@ public class HPancakeSortNode {
 	 * @return
 	 */
 	public int getLastFlip() {
-		return 0;
+		return lastFlip;
 	}
 	
 	/**
@@ -130,7 +144,12 @@ public class HPancakeSortNode {
 	 * @return
 	 */
 	public boolean isGoal() {
-		return false;
+		for (int i = 0; i < pancake.length - 1; i++) {
+			if (pancake[i] > pancake[i + 1]) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
@@ -138,14 +157,33 @@ public class HPancakeSortNode {
 	 * the last flip made, and the current pancake sequence.
 	 */
 	public String toString() {
-		return null;
+		return Arrays.toString(pancake);
 	}
 	
 	/**
 	 * This method will be ignored in JUnit testing, but can serve as a place for your test code.
 	 * @param args
 	 */
-	public static void main(java.lang.String[] args) {
+	public static void main(String[] args) {
 		
+		int[] pancake = {3,4,6,2,5,7,89};
+		HSearcher searcher = new BestFirstSearcher(new AStarComparator());
+		HPancakeSortNode root = new HPancakeSortNode(pancake);
+//		System.out.println(root);
+//		
+//		System.out.println(root.expand());
+//		System.out.println(HPancakeSortNode.getGoalNode(pancake));
+		
+		if (searcher.search(root)) {
+			// successful search
+			System.out.println("Goal node found in " + searcher.getNodeCount() 
+			+ " nodes.");
+			System.out.println("Goal path:");
+			searcher.printGoalPath();
+		} else {
+			// unsuccessful search
+			System.out.println("Goal node not found in " 
+					+ searcher.getNodeCount() + " nodes.");
+		}
 	}
 }
