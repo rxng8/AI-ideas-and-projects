@@ -27,7 +27,6 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
  */
 
-import java.util.Arrays;
 import java.util.PriorityQueue;
 
 public class BinPackingProblem implements State {
@@ -43,7 +42,6 @@ public class BinPackingProblem implements State {
 	}
 
 	public BinPackingProblem(int min, int max, int items, int bins) {
-		java.util.Random random = new java.util.Random(0);
 		sizes = new int[items];
 		placements = new int[items];
 		binLoads = new int[bins];
@@ -52,7 +50,6 @@ public class BinPackingProblem implements State {
 			placements[i] = random.nextInt(bins);
 			binLoads[placements[i]] += sizes[i];
 		}
-		System.out.println(Arrays.toString(sizes));
 	}
 
 	public void step() {
@@ -113,5 +110,6 @@ public class BinPackingProblem implements State {
 		return sb.toString();
 	}
 }
+
 
 

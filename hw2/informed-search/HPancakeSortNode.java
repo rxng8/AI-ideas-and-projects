@@ -64,10 +64,11 @@ public class HPancakeSortNode extends HSearchNode {
 		ArrayList<SearchNode> children = new ArrayList<>();
 		
 		for (int i = 2; i <= this.pancake.length; i++) {
-			HPancakeSortNode child = clone();
+			HPancakeSortNode child = (HPancakeSortNode) childClone();
 			child.flip(i);
 			children.add(child);
-//			System.out.println(child);
+//			System.out.print(child + ": ");
+//			System.out.println(child.getF());
 		}
 		
 		return children;
@@ -123,12 +124,28 @@ public class HPancakeSortNode extends HSearchNode {
 	 * @return
 	 */
 	public double getH() {
-		int Hcost = 0;
-		for (int i = 0; i < pancake.length - 1; i++) {
-			Hcost += Math.abs(pancake[i + 1] - pancake[i]);
-		}
-		return Hcost;
+//		int Hcost = 0;
+//		for (int i = 0; i < pancake.length - 1; i++) {
+//			Hcost += Math.abs(pancake[i + 1] - pancake[i]);
+//		}
+//		return Hcost;
 //		return 0;
+		int c = 0;
+		for (int i = 0; i < pancake.length - 1; i++) {
+			if (Math.abs(pancake[i] - pancake[i + 1]) > 1) {
+				c++;
+			}
+		}
+		return c;
+		
+//		int c = 0;
+//		for (int i = 0; i < pancake.length - 1; i++) {
+//			if (pancake[i] > pancake[i + 1]) {
+//				c++;
+//			}
+//		}
+//		return c;
+//		
 	}
 		
 	/**
@@ -166,13 +183,13 @@ public class HPancakeSortNode extends HSearchNode {
 	 */
 	public static void main(String[] args) {
 		
-		int[] pancake = {3,4,6,2,5,7,89};
+		int[] pancake = {1,2,0};
 		HSearcher searcher = new BestFirstSearcher(new AStarComparator());
 		HPancakeSortNode root = new HPancakeSortNode(pancake);
 //		System.out.println(root);
 //		
 //		System.out.println(root.expand());
-//		System.out.println(HPancakeSortNode.getGoalNode(pancake));
+		System.out.println(HPancakeSortNode.getGoalNode(pancake));
 		
 		if (searcher.search(root)) {
 			// successful search

@@ -28,51 +28,50 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
  */
 
 public class Rastrigin implements State {
-    public static final double STDDEV = .05;
-    public static java.util.Random random 
-                    = new java.util.Random();
-    public double x;
-    public double y;
-    public double prevX;
-    public double prevY;
+	public static final double STDDEV = .05;
+	public static java.util.Random random = new java.util.Random();
+	public double x;
+	public double y;
+	public double prevX;
+	public double prevY;
 
-    public Rastrigin() {
-        this(10.0, 10.0);
-    }
+	public Rastrigin() {
+		this(10.0, 10.0);
+	}
 
-    public Rastrigin(double x, double y) {
-        this.x = x;
-        this.y = y;
-        prevX = x;
-        prevY = y;
-    }
+	public Rastrigin(double x, double y) {
+		this.x = x;
+		this.y = y;
+		prevX = x;
+		prevY = y;
+	}
 
-    public void step() {
-        prevX = x;
-        prevY = y;
-        x += STDDEV * random.nextGaussian();
-        y += STDDEV * random.nextGaussian();
-    }
+	public void step() {
+		prevX = x;
+		prevY = y;
+		x += STDDEV * random.nextGaussian();
+		y += STDDEV * random.nextGaussian();
+	}
 
-    public void undo() {
-        x = prevX;
-        y = prevY;
-    }
-            
-    public double energy() {
-        return x * x + y * y - Math.cos(18 * x) 
-               - Math.cos(18 * y) + 2;
-    }
+	public void undo() {
+		x = prevX;
+		y = prevY;
+	}
 
-    public Object clone() {
-        Rastrigin copy = new Rastrigin(x, y);
-        copy.prevX = prevX;
-        copy.prevY = prevY;
-        return copy;
-    }
+	public double energy() {
+		return x * x + y * y - Math.cos(18 * x) 
+		- Math.cos(18 * y) + 2;
+	}
 
-    public String toString() {
-        return "(" + x + ", " + y + ")";
-    }
+	public Object clone() {
+		Rastrigin copy = new Rastrigin(x, y);
+		copy.prevX = prevX;
+		copy.prevY = prevY;
+		return copy;
+	}
+
+	public String toString() {
+		return "(" + x + ", " + y + ")";
+	}
 
 }
