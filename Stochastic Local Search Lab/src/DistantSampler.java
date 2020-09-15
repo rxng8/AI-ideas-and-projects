@@ -28,8 +28,12 @@ public class DistantSampler {
 	 * less than 132.
 	 */
 	public static DistantSamplerState sample(double[][] data, int numSamples) {
-	    // TODO - Implement.
-	    return null;
+		final int ITERATIONS = 10000;
+		State state = new DistantSamplerState(data, numSamples);
+		SimulatedAnnealer searcher = new SimulatedAnnealer(state, 1000.0, 0.997);
+		State minState = searcher.search(ITERATIONS);
+		
+		return (DistantSamplerState) minState;
 	}
 	
 	@SuppressWarnings("unused")
@@ -68,7 +72,7 @@ public class DistantSampler {
 			for (int j = 0; j < size; j++)
 				System.out.print("" + grid[i][j] + (j == size - 1 ? '\n' : ' '));
 
-//		computeMedian(1000); // should be under 132.0 median for 10000 iterations and given data
+		computeMedian(10000); // should be under 132.0 median for 10000 iterations and given data
 	}
 
 }

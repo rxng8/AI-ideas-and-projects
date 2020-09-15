@@ -1,233 +1,182 @@
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 
-public class RookJumpingMaze implements State {
+public class RookJumpingMaze implements State{
 
-	RookJumpingMaze parent;
-	Random r;
-	static int UNREACHED = -1000000;
-	
-	public int size;
-	public int[][] maze;
-	
-	public int curRow;
-	public int curCol;
-	public int distance;
-	public int depth, nMoves;
-	
-	public int lastJump, lastRow, lastCol;
-	
+	public static int UNREACHED = -1000000;
+	public static Random random = new Random();
+	public int[][] maze; 
+	public int size, curRow, curCol, lastRow, lastCol, jump, lastJump;
+
+	/**
+	 * Construct a RookJumpingMaze that is a square grid with random, legal jump number for each position
+	 * @param size
+	 */
 	public RookJumpingMaze(int size) {
-		maze = new int [size][size];
+
 		this.size = size;
-		r = new Random();
-		for (int row = 0; row < size; row++) {
-			for (int col = 0; col < size; col++) {
-				// get max length grid that the value can move.
-				int[] moveDistance = {row, col, size - 1 - row, size - 1 - col};
-				int maxDistance = Integer.MIN_VALUE;
-				for (int d : moveDistance) {
-					if (d > maxDistance) {
-						maxDistance = d;
-					}
+		maze = new int[size][size];
+
+		for(int r = 0; r<size; r++) {
+			for(int c = 0; c<size; c++) {
+				//Max value from left to right and up to down
+				int max1= (size-r) > (size-c) ? (size-r):(size-c);
+				//Max value from right to left and down to up
+				int max2 = (r+1) >(c+1)? (r+1):(c+1);
+				//Max value of the two
+				int max = max1 > max2? max1: max2;
+				int value = random.nextInt(max);
+				while(value == 0) {
+					value = random.nextInt(max);
 				}
-				// range 1 -> maxdistance inclusive
-				maze[row][col] = r.nextInt(maxDistance) + 1;
+				maze[r][c] = value;
 			}
 		}
-		curRow = 0;
-		curCol = 0;
-		distance = 0;
-		depth = 0;
-		nMoves = 0;
+		//goal state
+		maze[size-1][size-1] = 0;
 	}
 
-	@Override
-	public void step() {
-		
-		int newRow = r.nextInt(size);
-		int newCol = r.nextInt(size);
-		while(newCol == size - 1 && newRow == size - 1) {
-			newRow = r.nextInt(size);
-			newCol = r.nextInt(size);
-		}
-		
-		lastRow = newRow;
-		lastCol = newCol;
-		lastJump = getJump(newRow, newCol);
-		// get max length grid that the value can move.
-		int[] moveDistance = {newRow, newCol, size - 1 - newRow, size - 1 - newCol};
-		int maxDistance = Integer.MIN_VALUE;
-		for (int d : moveDistance) {
-			if (d > maxDistance) {
-				maxDistance = d;
-			}
-		}
-		int newJump = r.nextInt(maxDistance) + 1;
-		while (newJump == getJump(newRow, newCol)) {
-			newJump = r.nextInt(maxDistance) + 1;
-		}
-		maze[newRow][newCol] = newJump;
-	}
-	
+	/**
+	 * Returns the jump number for the given row and column
+	 * @param row
+	 * @param col
+	 * @return
+	 */
 	public int getJump(int row, int col) {
 		return maze[row][col];
 	}
-	
+
+	/**
+	 * Returns the size for the square maze grid
+	 * @return
+	 */
 	public int getSize() {
 		return size;
 	}
 
-	@Override
-	public void undo() {
-		maze[lastRow][lastCol] = lastJump;
+	public double energy() {
+		int[][] check = new int [size][size];
+		for(int r = 0; r<size; r++)
+			for(int c = 0; c<size; c++) 
+				check[r][c] = UNREACHED;
+		
+		int[] start = {0,0,0};
+		LinkedList<int[]> queue = new LinkedList<>();
+		queue.add(start);
+		check[0][0] = 0;
+		while(true){
+			
+			if(queue.isEmpty())
+				return -check[size-1][size-1];
+			
+			int[] node = queue.remove();
+			int row = node[0];
+			int col = node[1];
+			int move = getJump(row, col);
+			
+			if(move == 0) {
+				return -1 * node[2];
+			}
+			
+			if(row + move < size && check[row + move][col] < 0) {
+				int[] child = (int[]) node.clone();
+				child[0] = row + move;
+				child[1] = col;
+				child[2] = node[2] + 1;
+				queue.add(child);
+				check[child[0]][child[1]] = child[2];
+			}
+			if(col + move < size && check[row][col + move] < 0) {
+				int[] child = (int[]) node.clone();
+				child[0] = row;
+				child[1] = col + move;
+				child[2] = node[2] + 1;
+				queue.add(child);
+				check[child[0]][child[1]] = child[2];
+			}
+			if(row - move >-1 && check[row - move][col] < 0) {
+				int[] child = (int[]) node.clone();
+				child[0] = row - move;
+				child[1] = col;
+				child[2] = node[2] + 1;
+				queue.add(child);
+				check[child[0]][child[1]] = child[2];
+			}
+			if(col - move >-1 && check[row][col- move] < 0)  {
+				int[] child = (int[]) node.clone();
+				child[0] = row;
+				child[1] = col - move;
+				child[2] = node[2] + 1;
+				queue.add(child);
+				check[child[0]][child[1]] = child[2];
+			}
+		}
 	}
 
-	@Override
-	public double energy() {
-		return (double) bfs(size - 1, size - 1);
-	}
-	
-//	private int bfs(int goalRow, int goalCol) {
-//		
-//		boolean[][] check = new boolean[size][size];
-//		Queue<int[]> queue = new LinkedList<>();
-//		queue.add(new int[] {0, 0});
-//		
-//		while(true) {
-//			if (queue.isEmpty()) {
-//				break;
-//			}
-//			
-//			int[] curId = queue.remove();
-//			check[curId[0]][curId[1]] = true;
-//			
-//			// If is goal
-//			if (curId[0] == goalRow && curId[1] == goalCol) {
-//				break;
-//			}
-//			
-//			
-//			// Else expand
-//			// If it's possible add the new id to the queue
-//			int jump = getJump(curId[0], curId[1]);
-//			int[] moveN = {curId[0] - jump, curId[1]};
-//			int[] moveS = {curId[0] + jump, curId[1]};
-//			int[] moveE = {curId[0], curId[1] - jump};
-//			int[] moveW = {curId[0], curId[1] + jump};
-//			
-//			int[][] uncheckedMoves = {moveN, moveS, moveE, moveW};
-//			for (int[] move : uncheckedMoves) {
-//				// check valid
-//				if (move[0] < size && move[1] < size && move[0] > 0 && move[1] > 0 && !check[move[0]][move[1]]) {
-//					queue.add(move);
-//				}
-//			}
-//			
-//		}
-//		
-//		return 0;
-//	}
-	
-	private boolean checkBound (int row, int col) {
-		return row >= 0
-				&& col >= 0
-				&& row < size
-				&& col < size;
-	}
-	
-	private int bfs(int goalRow, int goalCol) {
-		RookJumpingMaze goal = null;
-		boolean[][] check = new boolean[size][size];
-		Queue<RookJumpingMaze> queue = new LinkedList<>();
-		queue.add(this);
-		
-		while(true) {
-			if (queue.isEmpty()) {
-				break;
-			}
-			
-			RookJumpingMaze cur = queue.remove();
-			check[cur.curRow][cur.curCol] = true;
-			
-			// If is goal
-			if (cur.curRow == goalRow && cur.curCol == goalCol) {
-				goal = cur;
-				break;
-			}
-			
-			// Else expand
-			// If it's possible add the new id to the queue, 4 directions
-			int jump = getJump(cur.curRow, cur.curCol);
-			
-			RookJumpingMaze moveN = clone();
-			moveN.curRow = cur.curRow - jump;
-			moveN.nMoves ++;
-			moveN.distance += jump;
-			if(checkBound(moveN.curRow, moveN.curCol) && !check[moveN.curRow][moveN.curCol]) {
-				queue.add(moveN);
-			}
-			
-			RookJumpingMaze moveS = clone();
-			moveS.curRow = cur.curRow + jump;
-			moveS.nMoves ++;
-			moveS.distance += jump;
-			if(checkBound(moveS.curRow, moveS.curCol) && !check[moveS.curRow][moveS.curCol]) {
-				queue.add(moveS);
-			}
-			
-			RookJumpingMaze moveE = clone();
-			moveE.curRow = cur.curCol - jump;
-			moveE.nMoves ++;
-			moveE.distance += jump;
-			if(checkBound(moveE.curRow, moveE.curCol) && !check[moveE.curRow][moveE.curCol]) {
-				queue.add(moveE);
-			}
-			
-			RookJumpingMaze moveW = clone();
-			moveW.curRow = cur.curCol + jump;
-			moveW.nMoves ++;
-			moveW.distance += jump;
-			if(checkBound(moveW.curRow, moveW.curCol) && !check[moveW.curRow][moveW.curCol]) {
-				queue.add(moveW);
-			}
+	public void step() {
+		curRow = random.nextInt(size);
+		curRow = random.nextInt(size);
+		while(curRow == size-1 && curCol == size-1) {
+			curRow = random.nextInt(size);
+			curRow = random.nextInt(size);
 		}
 		
-		if (goal != null) {
-			return goal.distance;
-		}
+		lastJump = maze[curRow][curCol];
+		lastRow = curRow; 
+		lastCol = curCol;
 		
-		return 1000000;
+		//Max value from left to right and up to down
+		int max1= (size-curRow) > (size-curCol) ? (size-curRow):(size-curCol);
+		//Max value from right to left and down to up
+		int max2 = (curRow+1) >(curCol+1)? (curRow+1):(curCol+1);
+		//Max value of the two
+		int max = max1 > max2? max1: max2;
+
+		jump = random.nextInt(max);
+		while(jump == 0 || jump == maze[curRow][curCol]) {
+			jump = random.nextInt(max);
+		}
+		maze[curRow][curCol] = jump;
 	}
-	
+
+	public void undo() {
+		maze[lastRow][lastCol] = lastJump; 
+	}
+
 	public RookJumpingMaze clone() {
 		try {
 			RookJumpingMaze copy = (RookJumpingMaze) super.clone();
-			copy.parent = this;
-			copy.depth = depth + 1;
+			copy.maze = new int[size][size];
+			for(int r = 0; r<size; r++) {
+				for(int c = 0; c<size; c++) {
+					copy.maze[r][c] = maze[r][c];
+				}
+			}
 			copy.size = size;
-			copy.curCol = curRow;
-			copy.curCol = curCol;
-			copy.curCol = distance;
-			copy.curCol = nMoves;
-			
+			copy.curRow = curRow; 
+			copy.curCol = curCol; 
+			copy.lastRow = lastRow;
+			copy.lastCol = lastCol;
+			copy.jump = jump;
+			copy.lastJump = lastJump;
 			return copy;
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		return null;
 	}
 
-	public String toString() {
-		return null;
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		for(int r = 0; r<size; r++) {
+			for(int c = 0; c<size; c++) {
+				sb.append(maze[r][c] + " ");
+			}
+			sb.append("\n");
+		}
+		sb.append(energy() + "\n");
+		return sb.toString();
 	}
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
-	}
-	
+
 }
