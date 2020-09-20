@@ -28,11 +28,26 @@ public class DistantSampler {
 	 * less than 132.
 	 */
 	public static DistantSamplerState sample(double[][] data, int numSamples) {
+		double acceptRate = 0.0005;
 		final int ITERATIONS = 10000;
-		State state = new DistantSamplerState(data, numSamples);
-		SimulatedAnnealer searcher = new SimulatedAnnealer(state, 1000.0, 0.997);
-		State minState = searcher.search(ITERATIONS);
-		
+		DistantSamplerState state = new DistantSamplerState(data, numSamples);
+		DistantSamplerState minState = state.clone();
+		double energy = state.energy();
+		double minEnergy = energy;
+		Random random = new Random();
+		for (int i = 0; i < ITERATIONS; i++) {	
+			state.step();
+			double nextEnergy = state.energy();
+			if (nextEnergy <= energy || random.nextDouble() < acceptRate) {
+				energy = nextEnergy;
+				if (nextEnergy < minEnergy) {
+					minState = state.clone();
+					minEnergy = nextEnergy;
+				}
+			} else {
+				state.undo();
+			}
+		}		
 		return (DistantSamplerState) minState;
 	}
 	

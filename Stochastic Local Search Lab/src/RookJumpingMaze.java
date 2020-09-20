@@ -114,11 +114,12 @@ public class RookJumpingMaze implements State{
 	}
 
 	public void step() {
+		
 		curRow = random.nextInt(size);
-		curRow = random.nextInt(size);
+		curCol = random.nextInt(size);
 		while(curRow == size-1 && curCol == size-1) {
 			curRow = random.nextInt(size);
-			curRow = random.nextInt(size);
+			curCol = random.nextInt(size);
 		}
 		
 		lastJump = maze[curRow][curCol];
@@ -174,7 +175,7 @@ public class RookJumpingMaze implements State{
 			}
 			sb.append("\n");
 		}
-		sb.append(energy() + "\n");
+//		sb.append(energy() + "\n");
 		return sb.toString();
 	}
 

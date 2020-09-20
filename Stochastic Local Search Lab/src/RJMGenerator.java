@@ -1,9 +1,7 @@
 import java.util.Arrays;
 import java.util.Random;
 
-
 public class RJMGenerator {
-
 	/**
 	 * Generate a RookJumpingMaze of the given size and optimize it using a stochastic local search algorithm of your choice, limited to a maximum of 5000 iterations.  
 	 * For a size 5 RookJumpingMaze, your algorithm should be tuned to achieve a median energy of -18.0.
@@ -11,11 +9,26 @@ public class RJMGenerator {
 	 * @return the generated RookJumpingMaze
 	 */
 	public static RookJumpingMaze generate(int size) {
-	    // TODO - Implement.
+		double acceptRate = 0.0005;
 		final int ITERATIONS = 5000;
-		State state = new RookJumpingMaze(size);
-		SimulatedAnnealer searcher = new SimulatedAnnealer(state, 1000.0, 0.997);
-		State minState = searcher.search(ITERATIONS);
+		RookJumpingMaze state = new RookJumpingMaze(size);
+		RookJumpingMaze minState = state.clone();
+		double energy = state.energy();
+		double minEnergy = energy;
+		Random random = new Random();
+		for (int i = 0; i < ITERATIONS; i++) {	
+			state.step();
+			double nextEnergy = state.energy();
+			if (nextEnergy <= energy || random.nextDouble() < acceptRate) {
+				energy = nextEnergy;
+				if (nextEnergy < minEnergy) {
+					minState = state.clone();
+					minEnergy = nextEnergy;
+				}
+			} else {
+				state.undo();
+			}
+		}
 		
 		return (RookJumpingMaze) minState;
 	}
