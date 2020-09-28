@@ -5,7 +5,7 @@
  * @author Todd Neller
  * @version 1.1 */
 
-public class TnellerMancalaPlayer implements MancalaPlayer {
+public class AlexPlayer implements MancalaPlayer {
 
 	/**
 	 * Choose a move for the given game situation given play time
@@ -13,20 +13,20 @@ public class TnellerMancalaPlayer implements MancalaPlayer {
 	public int chooseMove(MancalaNode node, long timeRemaining) {
 		// WARNING: This is a sloppy hack to try to distribute search
 		// time over course of game.  Use at your own risk.
-		final double DEPTH_FACTOR = 1.1;
+		final double DEPTH_FACTOR = 1.8;
 		int depthLimit 
 		= (int) (DEPTH_FACTOR 
 				* Math.log((double) timeRemaining 
 						/ piecesRemaining(node)));
 		if (depthLimit < 1) depthLimit = 1;
 
-		MinimaxSearcher searcher 
-		= new MinimaxSearcher(depthLimit);
+		AlphaBetaSearcher searcher 
+		= new AlphaBetaSearcher(depthLimit);
 
 		// Create a new copy of the input node in my own node
 		// type (with my own evaluation function)
-		TnellerMancalaNode searchNode 
-		= new TnellerMancalaNode(node);
+		WeightedSumMancalaNode searchNode 
+		= new WeightedSumMancalaNode(node);
 
 		searcher.eval(searchNode);
 		return searcher.getBestMove();
