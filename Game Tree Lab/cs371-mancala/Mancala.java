@@ -24,7 +24,7 @@ public class Mancala {
 		MancalaPlayer[] player = new MancalaPlayer[2];
 
 		// (*1*) put player one class here
-		player[GameNode.MAX] = new MidEvalPlayer(); 
+		player[GameNode.MAX] = new AlexHaoMancalaPlayer(); 
 		//		player[GameNode.MAX] = new TnellerMancalaPlayer();
 
 		// (*2*) put player two class here
@@ -55,6 +55,7 @@ public class Mancala {
 			int move;
 			String winner = "DRAW";
 			boolean p1Win = false;
+			int moves = 0;
 			while (!node.gameOver()) {
 				// Request move from current player
 				long timeRemaining = playerMillisRemaining[node.player];
@@ -65,6 +66,10 @@ public class Mancala {
 
 				// Duduct time taken
 				playerMillisRemaining[node.player] -= timeTaken;
+				
+				// Plus move
+				moves ++;
+				
 				if (playerMillisRemaining[node.player] < 0) {
 					if (node.player == GameNode.MAX) {
 						System.out.println("Player 1 game timer expired.");
@@ -94,13 +99,15 @@ public class Mancala {
 			nP1Win += p1Win ? 1 : 0;
 			
 			// Display winner and statistics
-			if (node.gameOver())
+			if (node.gameOver()) {
+				System.out.println("Number of moves of each players: " + moves / 2);
 				if (node.utility() > 0)
 					winner = "PLAYER 1 WINS";
 				else if (node.utility() < 0)
 					winner = "PLAYER 2 WINS";
 				else
 					winner = "DRAW";
+			}
 			System.out.println("Time Taken (ms): ");
 			System.out.println("Player 1: " + (MILLISECONDS_PER_GAME / 2L - playerMillisRemaining[GameNode.MAX]));
 			System.out.println("Player 2: " + (MILLISECONDS_PER_GAME / 2L - playerMillisRemaining[GameNode.MIN]));

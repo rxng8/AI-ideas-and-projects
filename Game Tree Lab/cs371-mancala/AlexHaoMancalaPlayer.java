@@ -5,7 +5,7 @@
  * @author Todd Neller
  * @version 1.1 */
 
-public class MidEvalPlayer implements MancalaPlayer {
+public class AlexHaoMancalaPlayer implements MancalaPlayer {
 
 	/**
 	 * Choose a move for the given game situation given play time
@@ -22,28 +22,29 @@ public class MidEvalPlayer implements MancalaPlayer {
 		double gaussian = gaussian(nMoves);
 		// End the clock ?
 		
-		final double DEPTH_FACTOR = 1.8;
+		final double DEPTH_FACTOR = 1.7;
 		int depthLimit 
 		= (int) (DEPTH_FACTOR 
 				* Math.log((1 + gaussian ) * (double) timeRemaining / piecesRemaining(node)));
 		if (depthLimit < 1) depthLimit = 1;
 
-		AlphaBetaSearcher searcher 
-		= new AlphaBetaSearcher(depthLimit);
+		AlexHaoAlphaBetaSearcher searcher 
+		= new AlexHaoAlphaBetaSearcher(depthLimit);
 
 		// Create a new copy of the input node in my own node
 		// type (with my own evaluation function)
-		WeightedSumMancalaNode searchNode 
-		= new WeightedSumMancalaNode(node);
+		AlexHao1MancalaNode searchNode 
+		= new AlexHao1MancalaNode(node);
 
 		searcher.eval(searchNode);
 		return searcher.getBestMove();
 	}
 
+	// Param are tuned by graphing calculator
 	private double gaussian (int nMove) {
-		double a = 1;
-		double b = 1;
-		double c = 1;
+		double a = 1.8;
+		double b = 12.1;
+		double c = 9.2;
 		return a * Math.exp(- Math.pow(nMove - b, 2) / (2 * c * c));
 	}
 	

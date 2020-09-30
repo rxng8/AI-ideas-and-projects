@@ -1,17 +1,17 @@
 
-public class WeightedSumMancalaNode extends MancalaNode {
+public class AlexHao1MancalaNode extends MancalaNode {
 	/**
 	 * TnellerMancalaNode constructor.
 	 */
-	public WeightedSumMancalaNode() {
+	public AlexHao1MancalaNode() {
 		super();
 	}
 
-	public WeightedSumMancalaNode(MancalaNode node) {
+	public AlexHao1MancalaNode(MancalaNode node) {
 		super(node);
 	}
 
-	public WeightedSumMancalaNode(int stateIndex) {
+	public AlexHao1MancalaNode(int stateIndex) {
 		super(stateIndex);
 	}
 	

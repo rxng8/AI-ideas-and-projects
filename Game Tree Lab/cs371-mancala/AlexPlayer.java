@@ -20,13 +20,13 @@ public class AlexPlayer implements MancalaPlayer {
 						/ piecesRemaining(node)));
 		if (depthLimit < 1) depthLimit = 1;
 
-		AlphaBetaSearcher searcher 
-		= new AlphaBetaSearcher(depthLimit);
+		AlexHaoAlphaBetaSearcher searcher 
+		= new AlexHaoAlphaBetaSearcher(depthLimit);
 
 		// Create a new copy of the input node in my own node
 		// type (with my own evaluation function)
-		WeightedSumMancalaNode searchNode 
-		= new WeightedSumMancalaNode(node);
+		AlexHao1MancalaNode searchNode 
+		= new AlexHao1MancalaNode(node);
 
 		searcher.eval(searchNode);
 		return searcher.getBestMove();

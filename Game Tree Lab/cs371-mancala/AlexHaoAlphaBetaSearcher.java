@@ -7,7 +7,7 @@
 
 import java.util.ArrayList;
 
-public class AlphaBetaSearcher implements GameTreeSearcher {
+public class AlexHaoAlphaBetaSearcher implements GameTreeSearcher {
 	/**
 	 * variable <code>depthLimit</code> - the depth limit of
 	 * minimax search */
@@ -30,7 +30,7 @@ public class AlphaBetaSearcher implements GameTreeSearcher {
 	 *
 	 * @param depthLimit an <code>int</code> value - the depth of
 	 * the minimax search tree*/
-	public AlphaBetaSearcher(int depthLimit) {
+	public AlexHaoAlphaBetaSearcher(int depthLimit) {
 		this.depthLimit = depthLimit;
 	}
 

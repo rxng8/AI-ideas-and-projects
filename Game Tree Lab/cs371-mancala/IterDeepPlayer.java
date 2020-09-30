@@ -48,7 +48,7 @@ public class IterDeepPlayer extends TnellerMancalaPlayer {
 		int bestMove = GameNode.UNDEFINED_MOVE;
 		long timeTaken;
 		while (!done && depthLimit <= MAX_DEPTH_LIMIT) {
-			AlphaBetaSearcher searcher = new AlphaBetaSearcher(depthLimit);
+			AlexHaoAlphaBetaSearcher searcher = new AlexHaoAlphaBetaSearcher(depthLimit);
 			searcher.eval(searchNode);
 			bestMove = searcher.getBestMove();
 			timeTaken = stopwatch.lap();
