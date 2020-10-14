@@ -21,6 +21,7 @@ public class TwoDicePigSolver {
 			for (int i = 0; i < goal; i++) // for all i
 				for (int j = 0; j < goal; j++) // for all j
 					for (int k = 0; k < goal - i; k++) { // for all k
+
 						double oldProb = p[i][j][k];
 						
 						// Compute p win roll
@@ -37,10 +38,11 @@ public class TwoDicePigSolver {
 							}
 						}
 						pRoll /= 36.0;
+//						System.out.println(pRoll);
 						
 						// Compute pwin hold
 						double pHold = 1.0 - pWin(j, i + k, 0);
-						
+//						System.out.println(pHold);
 						
 						p[i][j][k] = Math.max(pRoll, pHold);
 						roll[i][j][k] = pRoll > pHold;
@@ -64,8 +66,39 @@ public class TwoDicePigSolver {
 		return p[myScore][otherScore][turnScore];
 	}
 	
+	public void outputHoldValues() {
+		for (int i = 0; i < goal; i++) {
+			for (int j = 0; j < goal; j++) {
+				int k = 0;
+				while (k < goal - i && roll[i][j][k])
+					k++;    
+				System.out.print(k + " ");
+			}
+			System.out.println();
+		}
+	}
+	
 	public boolean shouldRoll(int i, int j, int k) {
 		return roll[i][j][k];
 	}
-
+	
+	public static void main(String[] args){
+		new TwoDicePigSolver(100, 1e-9).outputHoldValues();
+		TwoDicePigSolver pig = new TwoDicePigSolver(100, 1e-9);
+		for(int i = 0; i < pig.goal; i++) {
+			for(int j = 0; j < pig.goal; j++){
+				int k = 0;
+				System.out.print(i + "\t" + j + "\t" + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
+				for (k = 2; i + k < pig.goal; k++) { // for all valid k
+					boolean compare = pig.shouldRoll(i, j, k-1);
+					if(k==2) 
+						compare = pig.shouldRoll(i, j, 0);
+					if (pig.shouldRoll(i, j, k) != compare)
+						System.out.print(k + " " + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
+				}
+				System.out.println();
+			}
+		}
+	}
+	
 }

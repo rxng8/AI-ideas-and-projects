@@ -1,4 +1,4 @@
-
+# %%
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -21,7 +21,7 @@ def crawl(url, filename):
 
 if __name__ == "__main__":
     print("Creating 'data' folder in the current directory ...")
-    os.mkdir("data")
+    # os.mkdir("data")
     url = "http://cs.gettysburg.edu/~tneller/cs371/away/covid19.html"
     src = requests.get(url).text
     soup = BeautifulSoup(src, 'html.parser')
@@ -33,6 +33,6 @@ if __name__ == "__main__":
             p = re.compile("\/[A-Za-z0-9-]+.mp4")
             name = re.findall(p, video_link)[0][1:]
             print(f"Crawling video {name} ...")
-            crawl(video_link, name)
+            # crawl(video_link, name)
 
     print("Done!")

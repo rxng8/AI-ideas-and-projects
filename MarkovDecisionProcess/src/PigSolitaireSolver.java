@@ -53,12 +53,25 @@ public class PigSolitaireSolver {
         return p[i][j][k];
     }
 	
-	boolean shoudRoll (int i, int j, int k) {
+	boolean shouldRoll (int i, int j, int k) {
 		return roll[i][j][k];
 	}
-	
-	public static void main(String[] args) {
-		System.out.println("Meow");
-	}
-	
+//	public static void main(String[] args){
+//		PigSolitaireSolver pig = new PigSolitaireSolver(10, 10);
+//
+//		for(int i = 0; i < pig.goal; i++)
+//			for(int j = 0; j < pig.turns; j++){
+//				int k = 0;
+//				System.out.print(i + "\t" + j + "\t" + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
+//				for (k = 2; i + k < pig.goal; k++) { // for all valid k
+//					boolean compare = pig.shouldRoll(i, j, k-1);
+//					if(k==2) 
+//						compare = pig.shouldRoll(i, j, 0);
+//					if (pig.shouldRoll(i, j, k) != compare)
+//						System.out.print(k + " " + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
+//				}
+//				System.out.println();
+//			}
+//		System.out.println();
+//	}
 }

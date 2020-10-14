@@ -125,7 +125,7 @@ public class HogSolverInClass {
 					
 				}
 				
-				pRoll /= maxDice;
+//				pRoll /= maxDice;
 				
 				
 				

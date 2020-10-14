@@ -1,0 +1,30 @@
+I affirm that I will uphold the highest principles of honesty and integrity in all my endeavors at Gettysburg College and foster an atmosphere of mutual respect within and beyond the classroom.
+
+Group: Alex Nguyen (6051470) && Hao Lin (6020346).
+
+Exercise 3.5:
+(a) Let i, j, k be the number of current player's point, the opponent's point, and the turn total respectively. 
+We have p(i, j, k) be the probability of winning of the current player with i points, opponent j points, and the current turn total of k.
+
+
+(b) Equation that describe optimal play
+
+Let PI (s) be the optimal action at each state s.
+
+PI(s) = max (p_win_with_roll(s), p_win_with_hold(s))
+
+State s contains tuple i, j, k:
+
+p_win_with_roll (i, j, k) = ((1 - p_win_with_roll (j, i, 0)) 
+        + p_win_with_roll (i, j, k + 2) 
+        + p_win_with_roll (i, j, k + 3) 
+        + p_win_with_roll (i, j, k + 4) 
+        + p_win_with_roll (i, j, k + 5) 
+        + p_win_with_roll (i, j, k + 6)) / 6
+
+p_win_with_hold = 1 - p_win_with_hold (j, i + k, 0)
+
+(c) p[0][0][0] = 0.5305927250129695
+
+(d) Most of the time, the optimal policy is to roll to turn total at 20-25 and hold. If we are ahead of the opponent we can choose to reduce the turn total a little bit because we choose the play safe.
+However, if we are behind of the opponent, we have to take more risk by rolling more and more than just 20-25 turn total.
