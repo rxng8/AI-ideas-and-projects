@@ -82,23 +82,40 @@ public class TwoDicePigSolver {
 		return roll[i][j][k];
 	}
 	
+	public void summarize() {
+        System.out.println("p[0][0][0] = " + p[0][0][0]);
+        System.out.println();
+        System.out.println("i\tj\tPolicy changes at k =");
+        for (int i = 0; i < goal; i++) // for all i
+            for (int j = 0; j < goal; j++) { // for all j
+                int k = 0;
+                System.out.print(i + "\t" + j + "\t" + (roll[i][j][k] ? "roll " : "hold "));
+                for (k = 1; i + k < goal; k++) // for all valid k
+                    if (roll[i][j][k] != roll[i][j][k-1])
+                        System.out.print(k + " " + (roll[i][j][k] ? "roll " : "hold "));
+                System.out.println();
+            }
+    }
+	
 	public static void main(String[] args){
-		new TwoDicePigSolver(100, 1e-9).outputHoldValues();
+//		new TwoDicePigSolver(100, 1e-9).outputHoldValues();
 		TwoDicePigSolver pig = new TwoDicePigSolver(100, 1e-9);
-		for(int i = 0; i < pig.goal; i++) {
-			for(int j = 0; j < pig.goal; j++){
-				int k = 0;
-				System.out.print(i + "\t" + j + "\t" + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
-				for (k = 2; i + k < pig.goal; k++) { // for all valid k
-					boolean compare = pig.shouldRoll(i, j, k-1);
-					if(k==2) 
-						compare = pig.shouldRoll(i, j, 0);
-					if (pig.shouldRoll(i, j, k) != compare)
-						System.out.print(k + " " + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
-				}
-				System.out.println();
-			}
-		}
+		pig.summarize();
+//		TwoDicePigSolver pig = new TwoDicePigSolver(100, 1e-9);
+//		for(int i = 0; i < pig.goal; i++) {
+//			for(int j = 0; j < pig.goal; j++){
+//				int k = 0;
+//				System.out.print(i + "\t" + j + "\t" + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
+//				for (k = 2; i + k < pig.goal; k++) { // for all valid k
+//					boolean compare = pig.shouldRoll(i, j, k-1);
+//					if(k==2) 
+//						compare = pig.shouldRoll(i, j, 0);
+//					if (pig.shouldRoll(i, j, k) != compare)
+//						System.out.print(k + " " + (pig.shouldRoll(i, j, k) ? "roll " : "hold "));
+//				}
+//				System.out.println();
+//			}
+//		}
 	}
 	
 }

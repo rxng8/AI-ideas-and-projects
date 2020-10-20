@@ -1,25 +1,13 @@
-I affirm that I will uphold the highest principles of honesty and integrity in all my endeavors at Gettysburg College and foster an atmosphere of mutual respect within and beyond the classroom.
-
-Group: Alex Nguyen (6051470) && Hao Lin (6020346).
-
-----------------------------------------------------------------
-
 Exercises 2.4 (Pig Solitaire): 
-(a). 
-A state space is the current score, current turn, and the current turn total.
-
-(b).
-P<i,j,k> = max(P<i,j,k>roll, P<i,j,k>hold)
+a). A state space is the current score, current turn, and the current turn total.
+b).P<i,j,k> = max(P<i,j,k>roll, P<i,j,k>hold)
 P<i,j,k>roll = 1/6 (P<i,j+1,0> + P<i,j,k+2> + P<i,j,k+3> + P<i,j,k+3> + P<i,j,k+5> + P<i,j,k+6>
 P<i,j,k>hold = P<i+k, j+1,k>
-
-(c). 
-The state space is acyclic since an action will either result in a change in score and turn or turn total. 
+c). The state space is acyclic since an action will either result in a change in score and turn or turn total. 
 	When the player decided to roll, the turn total changes. When a player decided to hold, the score, turn, and turn total changes. 
 	The action taken by the player always leads to a change in score, current turn, or turn total, where there will no be no repeating state
 	since for every score and turn, the there can be no repeating turn total. A same turn total may only pair with a different score and turn. 
-
-(d).
+d).
 0	0	roll 22 hold 
 0	1	roll 24 hold 
 0	2	roll 26 hold 
@@ -1020,72 +1008,33 @@ The state space is acyclic since an action will either result in a change in sco
 99	7	roll 
 99	8	roll 
 99	9	roll 
-
-(e). 
-Starting at the first to the seventh turn, the player should continue rolling until hitting a specific amount to hold,unless the current score is more than 95.
+e). Starting at the first to the seventh turn, the player should continue rolling until hitting a specific amount to hold,unless the current score is more than 95.
 	As the current score increases,the current total at where the play need to roll till decreases. Since there are limited turn, the player need to accumulate 
 	more higher turn total to be able to get a score of 100 within 10 turns. After the seventh turn the player should just roll till hitting 100 because there is 
 	simply not enough turns for the player to hold. Also, when the score is very close to 100, the player should simply roll to the end. 
+f).11 turns
 
-(f).
-11 turns
+Exercises 3.5 (Pig):
+a). A space state is the current player's score, the opponent's score, and the player's current turn total.
+b). b).P<i,j,k> = max(P<i,j,k>roll, P<i,j,k>hold)
+P<i,j,k>roll = 1/6 (1-P<j,i,0> + P<i,j,k+2> + P<i,j,k+3> + P<i,j,k+3> + P<i,j,k+5> + P<i,j,k+6>
+P<i,j,k>hold = 1- P<j, i+k ,0>
+c).85%
+d).Whenever the player's score is above 80, the player should roll till the end regardless of the opponent's score. When both players have reached the high way point, the player
+	should hold when the turn total is around 20s and roll when the turn total is around high 30s. Lastly, when the opponent has a significantly higher, the player should roll
+	till the turn total is around mid to high 20s, and as the opponent gets closer to the goal, the larger the turn total need to be before holding. However, when the 
+	opponent's score is 20 pts away, the player should roll till the end. 
 
-
-----------------------------------------------------------------------------------
-
-Exercise 3.5 for PigSolver:
-
-(a).
-Let i, j, k be the number of current player's point, the opponent's point, and the turn total respectively. 
-We have p(i, j, k) be the probability of winning of the current player with i points, opponent j points, and the current turn total of k.
-A space state is the current player's score, the opponent's score, and the player's current turn total.
-
-(b).
-Equation that describe optimal play:
-Let PI (s) be the optimal action at each state s.
-PI(s) = max (p_win_with_roll(s), p_win_with_hold(s))
-
-State s contains tuple i, j, k:
-
-p_win_with_roll (i, j, k) = ((1 - p_win_with_roll (j, i, 0)) 
-        + p_win_with_roll (i, j, k + 2) 
-        + p_win_with_roll (i, j, k + 3) 
-        + p_win_with_roll (i, j, k + 4) 
-        + p_win_with_roll (i, j, k + 5) 
-        + p_win_with_roll (i, j, k + 6)) / 6
-
-p_win_with_hold (i, j, k) = 1 - p_win_with_hold (j, i + k, 0)
-
-(c).
-p[0][0][0] = 0.5305927250129695
-
-(d).
-Most of the time, the optimal policy is to roll to turn total at 20-25 and hold. If we are ahead of the opponent we can choose to reduce the turn total a little bit because we choose the play safe.
-However, if we are behind of the opponent, we have to take more risk by rolling more and more than just 20-25 turn total.
-
-
-------------------------------------------------------------------------------------
-
-
-Exercise 3.5 for TwoDicePigSolver:
-(a).
-Let i, j, k be the number of current player's point, the opponent's point, and the turn total respectively. 
-We have p(i, j, k) be the probability of winning of the current player with i points, opponent j points, and the current turn total of k.
-A space state is the current player's score, the opponent's score, and the player's current turn total.
-
-(b). 
-P<i,j,k> = max(P<i,j,k>roll, P<i,j,k>hold)
+TwoDicePigSolver:
+a). A space state is the current player's score, the opponent's score, and the player's current turn total.
+b). b).P<i,j,k> = max(P<i,j,k>roll, P<i,j,k>hold)
 P<i,j,k>roll = 1/36 (1-P<j,0,0> + 11(1-P<j,i,0>) + (P<i,j,k+2+2>) + (P<i,j,k+2+3>) + (P<i,j,k+2+4>) + (P<i,j,k+2+5>) + (P<i,j,k+2+6>) 
 						+ (P<i,j,k+3+2>) + (P<i,j,k+3+3>) + (P<i,j,k+3+4>) + (P<i,j,k+3+5>) + (P<i,j,k+3+6>) 
 						+ (P<i,j,k+4+2>) + (P<i,j,k+4+3>) + (P<i,j,k+4+4>) + (P<i,j,k+4+5>) + (P<i,j,k+4+6>) 
 						+ (P<i,j,k+5+2>) + (P<i,j,k+5+3>) + (P<i,j,k+5+4>) + (P<i,j,k+5+5>) + (P<i,j,k+5+6>) 
 						+ (P<i,j,k+6+2>) + (P<i,j,k+6+3>) + (P<i,j,k+6+4>) + (P<i,j,k+6+5>) + (P<i,j,k+6+6>) 
 P<i,j,k>hold = 1- P<j, i+k ,0>
-
-(c).
-p[0][0][0] = 0.5195588939251341
-
-(d). 
-As the both player score gets closer to the goal, the player should just roll till the end, but when the opponent's score is much lower, the player should only hold when the turn total 
+c).76%
+d). As the both player score gets closer to the goal, the player should just roll till the end, but when the opponent's score is much lower, the player should only hold when the turn total 
 	is about 10. It is similar to pig, but the turn total before holding is lower, around the mid 10s. Even when the player is significantly behind, the player should hold with a turn total 
 	of around 30s. However, once the opponent score pass 85, the player should just be rolling till hitting the goal. 

@@ -70,9 +70,9 @@ public class PigSolver {
             }
     }
 	
-	public static void main(String[] args){
-		PigSolver pig = new PigSolver(100, 1e-9);
-		pig.summarize();
+//	public static void main(String[] args){
+//		PigSolver pig = new PigSolver(100, 1e-9);
+//		pig.summarize();
 //		for(int i = 0; i < pig.goal; i++) {
 //			for(int j = 0; j < pig.goal; j++){
 //				int k = 0;
@@ -87,5 +87,5 @@ public class PigSolver {
 //				System.out.println();
 //			}
 //		}
-	}
+//	}
 }

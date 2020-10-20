@@ -22,23 +22,21 @@ public class TwoDicePigSolver {
 			for(int i = 0; i < goal; i++) {
 				for(int j = 0; j < goal; j++) {
 					for(int k = 0; k < goal - i; k++) {
-						
-						if(k==1 || k==2 || k==3)
-							continue;
-						
 						double oldProb = p[i][j][k];
 						double pRoll = 0;
-						//When one dice rolls a 1;
+						
 						for(int d1 = 1; d1 <= 6; d1++) {
 							for(int d2 = 1; d2 <= 6; d2++) {
+								
 								if(d1 == 1 || d2 == 1) {
 									if(d1 == 1 && d2 == 1)
-										pRoll += 1 - pWin(j,0,0);
+										pRoll += 1-pWin(j,0,0);
 									else
-										pRoll += pWin(i,j,0);
+										pRoll += 1-pWin(j,i,0);
 								}
 								else
 									pRoll += pWin(i,j, k + d1 + d2);	
+							
 							}
 						}
 						pRoll /= 36;
@@ -75,7 +73,7 @@ public class TwoDicePigSolver {
 				int k = 0;
 				while (k < goal - i && roll[i][j][k])
 					k++;    
-				System.out.print(k + " ");
+				System.out.printf("%-5d", k);
 			}
 			System.out.println();
 		}
