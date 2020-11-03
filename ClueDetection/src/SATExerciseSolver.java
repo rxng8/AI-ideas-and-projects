@@ -11,7 +11,7 @@ public class SATExerciseSolver {
 	public SATSolver get2Solver() {
 		SATSolver solver = new SAT4JSolver();
         final int A = 1, B = 2, C = 3;
-        int[][] clauses = {}; // TODO - Insert your clauses here.
+        int[][] clauses = {{-1,3},{-2,-3},{2,3},{-3,2,-1},{-2,3},{1,3}}; // TODO - Insert your clauses here.
         for (int[] clause : clauses)
         	solver.addClause(clause);
         return solver;
@@ -25,7 +25,55 @@ public class SATExerciseSolver {
 	public SATSolver get5Solver() {
         final int A = 1, B = 2, C = 3, D = 4, E = 5, F = 6;
         SATSolver solver = new SAT4JSolver();
-        int[][] clauses = {}; // TODO - Insert your clauses here.
+//        int[][] clauses = {
+//            	{-1,2},{-1,3},{-1,4},{-1,5},{-1,6},{-2,-3},{-2,-4},{-2,-5},{-2,-6},
+//            	{-3,1},{-3,2},{-4,1,2,3},{-5,-1},{-5,-2},{-5,-3},{-5,-4},{-6,-1},{-6,-2},
+//            	{-6,-3},{-6,-4},{-6,-5},
+//            	{-2,-3,-4,-5,-6,1},{3,4,5,6,2},{-1,-2,3},{-1,4},{-2,4},{-3,4},{1,2,3,4,5},{1,2,3,4,5,6}};
+        
+        int[][] clauses = {
+        		// From statement (1)
+        		{A, -B, -C, -D, -E, -F},
+        		{-A, B},
+        		{-A, C},
+        		{-A, D},
+        		{-A, E},
+        		{-A, F},
+        		
+        		// From statement (2)
+        		{B, C, D, E, F},
+        		{-B, -C},
+        		{-B, -D},
+        		{-B, -E},
+        		{-B, -F},
+        		
+        		// From statement (3)
+        		{C, -A, -B},
+        		{-C, A},
+        		{-C, B},
+        		
+        		// From statement (4)
+        		{D, -A},
+        		{D, -B},
+        		{D, -C},
+        		{A, B, C, -D},
+        		
+        		// From statement (5)
+        		{A, B, C, D, E},
+        		{-E, -A},
+        		{-E, -B},
+        		{-E, -C},
+        		{-E, -D},
+        		
+        		// From statement (6)
+        		{A, B, C, D, E, F},
+        		{-F, -A},
+        		{-F, -B},
+        		{-F, -C},
+        		{-F, -D},
+        		{-F, -E},
+        		
+        }; // TODO - Insert your clauses here.
         for (int[] clause : clauses)
             solver.addClause(clause);
         return solver;
