@@ -14,6 +14,7 @@ class SnakeEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
+        # Game width and height is the inner (in bound) env that snake can go!
         self.game_width = 10
         self.game_height = 10
         self.crash = False
@@ -54,33 +55,59 @@ class SnakeEnv(gym.Env):
         self.crash = False
         self.score = 0
         self.food = 1
+        self.x = int(0.5 * self.game_width)
+        self.y = int(0.5 * self.game_height)
+        # self.x = x - x % 20
+        # self.y = y - y % 20
+        self.position = []
+        self.position.append([self.x, self.y])
+        # Length of the snake body!
+        self.food = 1
+        self.eaten = False
+        self.x_change = 1
+        self.y_change = 0
+
+        # From food class
+        self.x_food = 3
+        self.y_food = 3
 
     def render(self, mode='human', close=False):
         string = ""
         # print(self.position[:][0])
-        print(self.position[:])
+        print("Current body position: " + str(self.position[:]))
+        # print wall
+        for i in range(self.game_width + 2):
+            string += "#"
+        string += "\n"
         for i in range(self.game_height):
-          for j in range(self.game_width):
-            # print(str(i) + " " + str(j))
-            bx = False
-            for x in range(len(self.position)):
-              if i == self.position[x][0]:
-                bx = True
+            # Print wall
+            string += "#"
+            for j in range(self.game_width):
+                
 
-            by = False
-            for y in range(len(self.position)):
-              if j == self.position[y][1]:
-                by = True
+                # print(str(i) + " " + str(j))
+                bx = False
+                for x in range(len(self.position)):
+                    if i == self.position[x][0]:
+                        bx = True
 
-            if bx and by:
-              string += "#"
-            # if self.position and (i in self.position[:][0] and j in self.position[:][1]):
-            #   string += "#"
-            elif i == self.x_food and j == self.y_food:
-              string += "o"
-            else:
-              string += "_"
-          string += "\n"
+                by = False
+                for y in range(len(self.position)):
+                    if j == self.position[y][1]:
+                        by = True
+
+                if bx and by:
+                    string += "+"
+                # if self.position and (i in self.position[:][0] and j in self.position[:][1]):
+                #   string += "#"
+                elif i == self.x_food and j == self.y_food:
+                    string += "o"
+                else:
+                    string += " "
+            string += "#\n"
+        for i in range(self.game_width + 2):
+            string += "#"
+        
         print(string)
 
 
