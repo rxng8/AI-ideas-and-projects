@@ -9,15 +9,15 @@ import time
 state = env.reset()
 
 crash = False
-
-# print(str(env.x) + " " +str(env.y))
-for i in range(1000):
+position = None
+print(str(env.x) + " " +str(env.y))
+for i in range(10):
     clear_output(wait=True)
     action = random.randint(0, 2)
-    crash = env.step(action) 
+    position, crash = env.step(action)
     if crash:
         break
-    # print(str(env.x) + " " +str(env.y))
+    print(str(env.x) + " " +str(env.y))
     env.render()
     time.sleep(0.1)
     
