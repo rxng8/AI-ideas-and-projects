@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -83,7 +83,7 @@ public class KMeansClusterer {
 		this.kMax = kMax;
 		this.k = kMin;
 	}
-	
+
 	/**
 	 * Return the number of clusters k.  After calling kMeansCluster() with a range from kMin to kMax, this value will be the k yielding the maximum gap statistic.
 	 * @return the number of clusters k.
@@ -91,7 +91,7 @@ public class KMeansClusterer {
 	public int getK() {
 		return k;
 	}
-	
+
 	/**
 	 * Set the number of iterations to perform k-Means Clustering and choose the minimum WCSS result.
 	 * @param iter the number of iterations to perform k-Means Clustering
@@ -131,15 +131,15 @@ public class KMeansClusterer {
 		}
 		return Math.sqrt(sumOfSquareDiffs);
 	}
-	
+
 	/**
 	 * Return the minimum Within-Clusters Sum-of-Squares measure for the chosen k number of clusters.
 	 * @return the minimum Within-Clusters Sum-of-Squares measure
 	 */
 	public double getWCSS() {
-		
+
 		double globalSum = Double.MAX_VALUE;
-		
+
 		// For each centroid
 		for (int i = 0; i < k; i++) {
 			double sum = 0;
@@ -160,7 +160,7 @@ public class KMeansClusterer {
 	 * @return whether or not any cluster assignments changed
 	 */
 	public boolean assignNewClusters() {
-		
+
 		// Loop through all data points, for each data points, loop through all centroids.
 		boolean change = false;
 		for (int p = 0; p < data.length; p++) {
@@ -176,7 +176,7 @@ public class KMeansClusterer {
 		}
 		return change;
 	}
-	
+
 	/**
 	 * Compute new centroids at the mean point of each cluster of points.
 	 */
@@ -204,16 +204,149 @@ public class KMeansClusterer {
 		}
 	}
 
-	
+
 	/**
 	 * Perform k-means clustering with Forgy initialization and return the 0-based cluster assignments for corresponding data points.
-	 * If iter &gt; 1, choose the clustering that minimizes the WCSS measure.
-	 * If kMin &lt; kMax, select the k maximizing the gap statistic using 100 uniform samples uniformly across given data ranges.
+	 * If iter > 1, choose the clustering that minimizes the WCSS measure.
+	 * If kMin < kMax, select the k maximizing the gap statistic using 100 uniform samples uniformly across given data ranges.
 	 */
 	public void kMeansCluster() {
-		// TODO - implement
+		
+		centroids = new double[k][dim];
+		clusters = new int[data.length];
+
+		HashSet<Integer> hs = new HashSet<>();
+		int num = 0;
+		while (num < k) {
+			int tmp = random.nextInt(data.length);
+			if (!hs.contains(tmp)) {
+				hs.add(tmp);
+				num++; 
+			}
+		}
+
+		num = 0;
+		for (int i : hs) {
+			centroids[num] = data[i].clone();
+			num++;
+		}
+		
+		do_one();
+		if (iter > 1) {
+			System.out.println("hello?");
+			iterate();
+		} 
+//		else {
+//			do_one();
+//		}
+		if (kMin < kMax) {
+			System.out.println("HEllo@?");
+			k = gap_statistics();
+		}
+		
 	}
-	
+
+	private int gap_statistics() {
+		
+		// Get min size, max size
+		double[] minSizes = new double[dim];
+		for (int i = 0; i < minSizes.length; i++) {
+			minSizes[i] = Double.MAX_VALUE;
+		}
+		double[] maxSizes = new double[dim];
+		for (int i = 0; i < minSizes.length; i++) {
+			maxSizes[i] = Double.MIN_VALUE;
+		}
+		// Range!@!!!
+		for (int d = 0; d < dim; d++) {
+			for (int i = 0; i < data.length; i++) {
+				minSizes[d] = Math.min(minSizes[d], data[i][d]);
+				maxSizes[d] = Math.max(minSizes[d], data[i][d]);
+			}
+		}
+		
+		// Gap stat thinggyyy!
+		double maxGapWCSS = Double.MIN_VALUE;
+		int minK = -1;
+		for (int candidateK = kMin; candidateK <= kMax; candidateK++) {
+			// Cal original CSS
+			KMeansClusterer km = new KMeansClusterer();
+			km.setKRange(candidateK, candidateK);
+			km.setIter(iter);
+			km.setData(data);
+			km.kMeansCluster();
+			double originalLogCSS = Math.log(km.getWCSS());
+//			double originalCSS = km.getWCSS();
+			
+			double sumLogWCSS = 0;
+			for(int t = 0; t < 100; t++) {
+				// Pick <batch> number of random data points
+				double[][] batchData = new double[data.length][dim];
+				for (int p = 0; p < batchData.length; p++) {
+					for (int d = 0; d < dim; d++) {
+						batchData[p][d] = random.nextDouble() * (maxSizes[d] - minSizes[d]) + minSizes[d];
+					}
+				}
+				
+				KMeansClusterer kmc = new KMeansClusterer();
+				kmc.setKRange(candidateK, candidateK);
+				kmc.setIter(1);
+				kmc.setData(batchData);
+				kmc.kMeansCluster();
+				double gapCSS = Math.log(kmc.getWCSS());
+				sumLogWCSS += gapCSS;
+			}
+			// Average 100 random set
+			sumLogWCSS /= 100;
+			
+			// If gap is smaller, set the new min gap and new k!
+			if (sumLogWCSS - originalLogCSS > maxGapWCSS) {
+				maxGapWCSS = sumLogWCSS - originalLogCSS;
+				minK = candidateK;
+				
+				// ??????
+				clusters = km.clusters;
+				centroids = km.centroids;
+				
+			}
+		}
+		return minK;
+	}
+
+	private void iterate() {
+		int it = 0;
+		// min val
+		double minCSS = Double.MAX_VALUE;
+		while (it < iter) {
+			KMeansClusterer km = new KMeansClusterer();
+			km.setKRange(k, k);
+			km.setIter(1);
+			km.setData(data);
+			// deep clone!
+			km.clusters = clusters.clone();
+			km.centroids = new double[centroids.length][dim];
+			for (int i = 0; i < centroids.length; i++) {
+				km.centroids[i] = centroids[i].clone();
+			}
+			// Clusting!
+			km.kMeansCluster();
+			double originalCSS = km.getWCSS();
+			
+			// Do some stuff when find out minCSS
+			if (originalCSS < minCSS) {
+				minCSS = originalCSS;	
+				clusters = km.clusters;
+				centroids = km.centroids;
+			}
+			it++;
+		}
+	}
+
+	private void do_one() {
+		assignNewClusters();
+		computeNewCentroids();
+	}
+
 	/**
 	 * Export cluster data in the given data output format.
 	 */
@@ -245,7 +378,6 @@ public class KMeansClusterer {
 		ArrayList<String> attributes = new ArrayList<String>();
 		ArrayList<Integer> values = new ArrayList<Integer>();
 		int i = 0;
-		System.out.println("Hello");
 		while (i < args.length) {
 			if (args[i].equals("-k") || args[i].equals("-kmin") || args[i].equals("-kmax") || args[i].equals("-iter")) {
 				attributes.add(args[i++].substring(1));
@@ -276,7 +408,7 @@ public class KMeansClusterer {
 			else if (attribute.equals("iter"))
 				iter = values.get(i);
 		}
-		
+
 		KMeansClusterer km = new KMeansClusterer();
 		km.setKRange(kMin, kMax);
 		km.setIter(iter);
