@@ -138,19 +138,17 @@ public class KMeansClusterer {
 	 */
 	public double getWCSS() {
 
-		double globalSum = Double.MAX_VALUE;
+		double globalSum = 0;
 
 		// For each centroid
 		for (int i = 0; i < k; i++) {
-			double sum = 0;
 			// Calculate the sum of square difference
 			for (int j = 0; j < data.length; j ++) {
 				// If the data point is in the i-th cluster
 				if (clusters[j] == i) {
-					sum += Math.pow(getDistance(data[j], centroids[clusters[j]]), 2);
+					globalSum += Math.pow(getDistance(data[j], centroids[clusters[j]]), 2);
 				}
 			}
-			globalSum = Math.min(globalSum, sum);
 		}
 		return globalSum;
 	}
@@ -231,16 +229,16 @@ public class KMeansClusterer {
 			num++;
 		}
 		
-		do_one();
+//		do_one();
 		if (iter > 1) {
-			System.out.println("hello?");
+//			System.out.println("hello?");
 			iterate();
 		} 
-//		else {
-//			do_one();
-//		}
+		else {
+			do_one();
+		}
 		if (kMin < kMax) {
-			System.out.println("HEllo@?");
+//			System.out.println("HEllo@?");
 			k = gap_statistics();
 		}
 		
@@ -266,7 +264,7 @@ public class KMeansClusterer {
 		}
 		
 		// Gap stat thinggyyy!
-		double maxGapWCSS = Double.MIN_VALUE;
+		double maxGapWCSS = Double.NEGATIVE_INFINITY;
 		int minK = -1;
 		for (int candidateK = kMin; candidateK <= kMax; candidateK++) {
 			// Cal original CSS
@@ -298,19 +296,23 @@ public class KMeansClusterer {
 			}
 			// Average 100 random set
 			sumLogWCSS /= 100;
-			
+//			System.out.println(sumLogWCSS);
+//			System.out.println(originalLogCSS);
+//			System.out.println(maxGapWCSS);
+//			System.out.println(maxGapWCSS);
+//			System.out.println();
 			// If gap is smaller, set the new min gap and new k!
 			if (sumLogWCSS - originalLogCSS > maxGapWCSS) {
 				maxGapWCSS = sumLogWCSS - originalLogCSS;
 				minK = candidateK;
-				
+//				System.out.println("Hey!");
 				// ??????
 				clusters = km.clusters;
 				centroids = km.centroids;
 				
 			}
 		}
-		return minK;
+		return minK != -1 ? minK : k;
 	}
 
 	private void iterate() {
@@ -343,8 +345,17 @@ public class KMeansClusterer {
 	}
 
 	private void do_one() {
-		assignNewClusters();
-		computeNewCentroids();
+		double wcss = getWCSS();
+		while (true) {
+//			System.out.println("This is WCSS: " + wcss);
+			assignNewClusters();
+			computeNewCentroids();
+			double newWcss = getWCSS();
+			if (newWcss >= wcss) {
+				break;
+			}
+			wcss = newWcss;
+		}
 	}
 
 	/**
@@ -374,7 +385,7 @@ public class KMeansClusterer {
 	 * @param args command-line parameters specifying the type of k-Means Clustering
 	 */
 	public static void main(String[] args) {
-		int kMin = 2, kMax = 2, iter = 1;
+		int kMin = 3, kMax = 50, iter = 10;
 		ArrayList<String> attributes = new ArrayList<String>();
 		ArrayList<Integer> values = new ArrayList<Integer>();
 		int i = 0;
