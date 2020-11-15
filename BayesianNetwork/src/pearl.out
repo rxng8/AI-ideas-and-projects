@@ -1,0 +1,33 @@
+BNNode a:
+  EVIDENCE
+  value: false
+  parents: (none)
+  children: b c
+  CPT: 0.2
+BNNode b:
+  value: false
+  parents: a
+  children: d
+  CPT: 0.2 0.8
+BNNode c:
+  value: false
+  parents: a
+  children: d e
+  CPT: 0.05 0.2
+BNNode d:
+  EVIDENCE
+  value: true
+  parents: b c
+  children: (none)
+  CPT: 0.05 0.8 0.8 0.8
+BNNode e:
+  value: false
+  parents: c
+  children: (none)
+  CPT: 0.6 0.8
+__________________________________
+After iteration 2000000:
+Variable, Average Conditional Probability, Fraction True
+b, 0.34785267393479746, 0.6958365
+c, 0.08690927477171949, 0.1738245
+e, 0.3173826086944761, 0.634668

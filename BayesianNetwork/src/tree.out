@@ -1,0 +1,69 @@
+BNNode a:
+  value: false
+  parents: (none)
+  children: b c
+  CPT: 0.1
+BNNode b:
+  value: false
+  parents: a
+  children: d e
+  CPT: 0.0 0.1
+BNNode c:
+  value: false
+  parents: a
+  children: (none)
+  CPT: 0.0 0.1
+BNNode d:
+  value: false
+  parents: b
+  children: f g
+  CPT: 0.0 0.1
+BNNode e:
+  value: false
+  parents: b
+  children: (none)
+  CPT: 0.0 0.1
+BNNode f:
+  value: false
+  parents: d
+  children: h i
+  CPT: 0.0 0.1
+BNNode g:
+  value: false
+  parents: d
+  children: (none)
+  CPT: 0.0 0.1
+BNNode h:
+  value: false
+  parents: f
+  children: j k
+  CPT: 0.0 0.1
+BNNode i:
+  value: false
+  parents: f
+  children: (none)
+  CPT: 0.0 0.1
+BNNode j:
+  value: false
+  parents: h
+  children: (none)
+  CPT: 0.0 0.1
+BNNode k:
+  value: false
+  parents: h
+  children: (none)
+  CPT: 0.0 0.1
+__________________________________
+After iteration 10000000:
+Variable, Average Conditional Probability, Fraction True
+a, 0.05000968389209119, 0.1000227
+b, 0.00499332297634927, 0.0099835
+c, 0.00500113550018026, 0.010047
+d, 4.958326183906825E-4, 9.938E-4
+e, 4.991750499184444E-4, 9.871E-4
+f, 4.9331197593680905E-5, 9.29E-5
+g, 4.9690004969008366E-5, 9.85E-5
+h, 4.615138076192782E-6, 9.6E-6
+i, 4.645000464499996E-6, 9.2E-6
+j, 4.800000480000039E-7, 8.0E-7
+k, 4.800000480000039E-7, 9.0E-7

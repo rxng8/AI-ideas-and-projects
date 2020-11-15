@@ -1,4 +1,7 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
@@ -22,7 +25,35 @@ public class KMeansClusterer {
 	 * Read the specified data input format from the standard input stream and return a double[][] 
 	 * with each row being a data point and each column being a dimension of the data.
 	 * @return a double[][] with each row being a data point and each column being a dimension of the data
+	 * @throws FileNotFoundException 
 	 */
+	public double[][] readData(File f) throws FileNotFoundException {
+		int numPoints = 0;
+//		Scanner in = new Scanner(System.in);
+		Scanner in = new Scanner(f);
+		try {
+			dim = Integer.parseInt(in.nextLine().split(" ")[1]);
+			numPoints = Integer.parseInt(in.nextLine().split(" ")[1]);
+		}
+		catch (Exception e) {
+			System.err.println("Invalid data file format. Exiting.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		double[][] data = new double[numPoints][dim];
+		for (int i = 0; i < numPoints; i++) {
+			String line = in.nextLine();
+			Scanner lineIn = new Scanner(line);
+			for (int j = 0; j < dim; j++)
+				data[i][j] = lineIn.nextDouble();
+			lineIn.close();
+		}
+		in.close();		
+		return data;
+	}
+	
+	
+	
 	public double[][] readData() {
 		int numPoints = 0;
 		Scanner in = new Scanner(System.in);
@@ -383,9 +414,10 @@ public class KMeansClusterer {
 	 * "[-k] int" specifies both the minimum and maximum number of clusters. "-kmin int" specifies the minimum number of clusters. "-kmax int" specifies the maximum number of clusters. 
 	 * "-iter int" specifies the number of times k-Means Clustering is performed in iteration to find a lower local minimum.
 	 * @param args command-line parameters specifying the type of k-Means Clustering
+	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) {
-		int kMin = 3, kMax = 50, iter = 10;
+	public static void main(String[] args) throws FileNotFoundException {
+		int kMin = 2, kMax = 2, iter = 1;
 		ArrayList<String> attributes = new ArrayList<String>();
 		ArrayList<Integer> values = new ArrayList<Integer>();
 		int i = 0;
@@ -420,11 +452,47 @@ public class KMeansClusterer {
 				iter = values.get(i);
 		}
 
-		KMeansClusterer km = new KMeansClusterer();
-		km.setKRange(kMin, kMax);
-		km.setIter(iter);
-		km.setData(km.readData());
-		km.kMeansCluster();
-		km.writeClusterData();
+//		KMeansClusterer km = new KMeansClusterer();
+//		km.setKRange(kMin, kMax);
+//		km.setIter(iter);
+//		km.setData(km.readData());
+//		km.kMeansCluster();
+//		km.writeClusterData();
+		
+		
+		//Directory
+		File dir = new File("src");
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null) {
+			
+			// Work here!
+			
+
+			for (File f : directoryListing) {
+				String s = f.toString();
+				if (s.substring(s.length() - 3).equals("dat")) {
+					System.out.println(s);
+					
+					ArrayList<Double> median = new ArrayList<>();
+					double mn = Double.MAX_VALUE;
+					for (int t = 0; t < 1; t++) {
+						KMeansClusterer km = new KMeansClusterer();
+						km.setKRange(2, 2);
+						km.setIter(20);
+						km.setData(km.readData(f));
+						km.kMeansCluster();
+						double wcss = km.getWCSS();
+						
+						median.add(wcss);
+						mn = Math.min(mn, wcss);
+					}
+					Collections.sort(median);
+//					System.out.print("Minimum: " + mn + "\nMedian: " + median.toString() + "\n");
+					System.out.print("WCSS: " + median.get(0) + "\n");
+					
+				}
+			}
+		}
+
 	}
 }
