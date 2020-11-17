@@ -21,6 +21,8 @@ class SnakeEnv(gym.Env):
             x_food (int): x coord of the food
             y_food (int): y coord of the food
             crash (bool): Whether the game ends.
+
+            action: 0, 1, 2: move forward, going right, going left. First step is going right
         """
 
         # Game width and height is the inner (in bound) env that snake can go!
