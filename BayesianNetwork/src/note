@@ -126,7 +126,7 @@ e, 0.31739585169541823, 0.6348611
 
 Tree.in!
 
-
+(1)
 After iteration 10000:
 Variable, Average Conditional Probability, Fraction True
 a, 0.05083077115052078, 0.0973
@@ -185,3 +185,17 @@ h, 4.615138076192782E-6, 9.6E-6
 i, 4.645000464499996E-6, 9.2E-6
 j, 4.800000480000039E-7, 8.0E-7
 k, 4.800000480000039E-7, 9.0E-7
+
+
+(2) Observation:
+
+- The probability is converging to zero.
+- For each depth, the true probability is multiplied approximately by 1/10
+
+(3) Weakness of Gibbs Sampling?
+
+- For some very small value, the value can easily get to zero.
+- When the depth of the tree becomes higher, there will be more 
+    error in estimating the probability since we see the true 
+    probability of each node becomes lower than the manually calculated
+    probability as the depth becomes higher.

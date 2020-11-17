@@ -14,6 +14,15 @@ class SnakeEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
+        """
+            position (List[List]): The position of the snake body. 
+                The head is always at the last position of the list
+                Shape: (body length, 2). with 2 is the x and y coordinates.
+            x_food (int): x coord of the food
+            y_food (int): y coord of the food
+            crash (bool): Whether the game ends.
+        """
+
         # Game width and height is the inner (in bound) env that snake can go!
         self.game_width = 10
         self.game_height = 10
@@ -42,14 +51,20 @@ class SnakeEnv(gym.Env):
         self.x_food = 3
         self.y_food = 3
 
-
-
     def step(self, action):
-        reward = 0
         move = to_categorical(action, num_classes=3)
         self.do_move(move, self.x, self.y, self.food)
-        # return observation, state, reward, configuration
-        return self.position, self.crash
+        # return observation (current possition of the snake body, and 
+        #   food position), and the result of the game
+        """
+            position (List[List]): The position of the snake body. 
+                The head is always at the last position of the list
+                Shape: (body length, 2). with 2 is the x and y coordinates.
+            x_food (int): x coord of the food
+            y_food (int): y coord of the food
+            crash (bool): Whether the game ends.
+        """
+        return self.position, self.x_food, self.y_food, self.crash
 
     def reset(self):
         self.crash = False
@@ -70,6 +85,8 @@ class SnakeEnv(gym.Env):
         # From food class
         self.x_food = 3
         self.y_food = 3
+
+        return self.position, self.x_food, self.y_food, self.crash
 
     def render(self, mode='human', close=False):
         string = ""
