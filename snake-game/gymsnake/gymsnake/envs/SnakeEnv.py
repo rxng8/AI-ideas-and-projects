@@ -54,8 +54,14 @@ class SnakeEnv(gym.Env):
         self.y_food = 3
 
     def step(self, action):
+        prev_distance = self.euclidean_distance(self.x, self.y, self.x_food, self.y_food)
+        prev_food = self.food
+        print("Current length snake: " + str(prev_food))
         move = to_categorical(action, num_classes=3)
         self.do_move(move, self.x, self.y, self.food)
+        print("Current length snake after move: " + str(self.food))
+        distance = self.euclidean_distance(self.x, self.y, self.x_food, self.y_food)
+        reward = self.compute_reward(prev_distance, distance, prev_food, self.food, self.crash)
         # return observation (current possition of the snake body, and 
         #   food position), and the result of the game
         """
@@ -64,9 +70,27 @@ class SnakeEnv(gym.Env):
                 Shape: (body length, 2). with 2 is the x and y coordinates.
             x_food (int): x coord of the food
             y_food (int): y coord of the food
+            x is row, y is column
             crash (bool): Whether the game ends.
         """
-        return self.position, self.x_food, self.y_food, self.crash
+        """
+            TODO: Is the food to left right up down?
+            bool? The direction of the food?
+            Focus more on critical info other than the state.
+        """
+        return self.position, self.x_food, self.y_food, reward, self.crash
+
+    def compute_reward(self, prev_distance, distance, prev_food, food, end):
+        if end:
+            return -100 + self.food
+        if food > prev_food:
+            return 100
+        if distance < prev_distance:
+            return 1
+        return -1
+
+    def euclidean_distance(self, x1, y1, x2, y2):
+        return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
     def reset(self):
         self.crash = False
@@ -105,17 +129,23 @@ class SnakeEnv(gym.Env):
                 
 
                 # print(str(i) + " " + str(j))
-                bx = False
-                for x in range(len(self.position)):
-                    if i == self.position[x][0]:
-                        bx = True
+                # bx = False
+                # for x in range(len(self.position)):
+                #     if i == self.position[x][0]:
+                #         bx = True
 
-                by = False
-                for y in range(len(self.position)):
-                    if j == self.position[y][1]:
-                        by = True
+                # by = False
+                # for y in range(len(self.position)):
+                #     if j == self.position[y][1]:
+                #         by = True
 
-                if bx and by:
+                bod = False
+                for pos in self.position:
+                    if i == pos[0] and j == pos[1]:
+                        bod = True
+                        break
+
+                if bod:
                     string += "+"
                 # if self.position and (i in self.position[:][0] and j in self.position[:][1]):
                 #   string += "#"
@@ -165,13 +195,13 @@ class SnakeEnv(gym.Env):
             self.food = self.food + 1
         if np.array_equal(move, [1, 0, 0]):
             move_array = self.x_change, self.y_change
-        elif np.array_equal(move, [0, 1, 0]) and self.y_change == 0:  # right - going horizontal
+        elif np.array_equal(move, [0, 1, 0]) and self.y_change == 0:  # left - going horizontal
             move_array = [0, self.x_change]
-        elif np.array_equal(move, [0, 1, 0]) and self.x_change == 0:  # right - going vertical
+        elif np.array_equal(move, [0, 1, 0]) and self.x_change == 0:  # left - going vertical
             move_array = [-self.y_change, 0]
-        elif np.array_equal(move, [0, 0, 1]) and self.y_change == 0:  # left - going horizontal
+        elif np.array_equal(move, [0, 0, 1]) and self.y_change == 0:  # right - going horizontal
             move_array = [0, -self.x_change]
-        elif np.array_equal(move, [0, 0, 1]) and self.x_change == 0:  # left - going vertical
+        elif np.array_equal(move, [0, 0, 1]) and self.x_change == 0:  # right - going vertical
             move_array = [self.y_change, 0]
         # The new xchange y change! 
         self.x_change, self.y_change = move_array

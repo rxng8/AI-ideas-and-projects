@@ -118,7 +118,7 @@ public class BNGibbsSampler {
 				System.out.println("Variable, Average Conditional Probability, Fraction True");
 				for (int j = 0; j < totalNENs; j++) {
 					BNNode node = nonEvidenceNodes.get(j);
-					System.out.println(node.name + ", " + totalCPs[j] / (i + i) + ", "
+					System.out.println(node.name + ", " + totalCPs[j] / (i + 1) + ", "
 							+ trueCounts[j] / ((double) i + 1));
 				}
 			}
