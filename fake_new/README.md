@@ -4,11 +4,17 @@ Author: Alex Nguyen and Hao Lin | Gettysburg College
 
 ## Structure of the repository
 
+* The [`README.md`](./README.md) is the main written answer file that reader should follow in addition to the code written in [`notebook.py`](./notebook.py) and [`notebook.ipynb`](./notebook.ipynb).
+
 * The [analysis folder](./analysis) contains csv files that analyze the nature of the data.
 
 * The [data folder](./data) contains the data files.
 
 * The file [`notebook.py`](./notebook.py) is the main file that contains the main code analysis
+
+* The file [`notebook.ipynb`](./notebook.ipynb) is the main notebook that contains the main code analysis
+
+* [Here](https://colab.research.google.com/drive/1CniVqlrgH_wxul13CTXURzmqkxM3zVH8?usp=sharing) is the editable link to the google colab jupyter notebook. <b>Note:</b> Please upload the required folders and data files in order for the notebook to work.
 ------------------
 
 ## Part 1: 
@@ -21,7 +27,7 @@ Author: Alex Nguyen and Hao Lin | Gettysburg College
 
 ## Part 2:
 
-* Implemented in the [`notebook.py`](./notebook.py).
+* Implemented in the [`notebook.py`](./notebook.py) and [`notebook.ipynb`](./notebook.ipynb).
 
 ## Part 3:
 ### Part 3a:
@@ -47,14 +53,17 @@ Author: Alex Nguyen and Hao Lin | Gettysburg College
 * It is important to keep stop words from the model because ...
 
 ## Part 4:
+* Implemented in the [`notebook.py`](./notebook.py) and [`notebook.ipynb`](./notebook.ipynb).
 
 ## Part 5:
+* Implemented in the [`notebook.py`](./notebook.py) and [`notebook.ipynb`](./notebook.ipynb).
 
 ## Part 6:
+* Implemented in the [`notebook.py`](./notebook.py) and [`notebook.ipynb`](./notebook.ipynb).
 
-Most frequent:
+* Most frequent vs max coefficient:
 
- [1.6687395653110482,
+ max coefficient: [1.6687395653110482,
  1.6645178631109863,
  1.6481661544906379,
  1.401782153490334,
@@ -64,13 +73,15 @@ Most frequent:
  1.1652068741382289,
  1.1632194318665803,
  1.0941847441464467]
-~
-[0.10635443346749604, 0.050554945725088424, 0.02518599829247469, 0.01402610074399317, 0.013355287230150018, 0.01305037199658495, 0.012501524576167825, 0.011342846688620564, 0.010854982314916453, 0.010611050128064398]
+
+vs.
+
+Most frequent probability: [0.10635443346749604, 0.050554945725088424, 0.02518599829247469, 0.01402610074399317, 0.013355287230150018, 0.01305037199658495, 0.012501524576167825, 0.011342846688620564, 0.010854982314916453, 0.010611050128064398]
 
 
-Least frequent:
+* Least frequent vs min coefficient:
 
-[-2.075439801899081,
+min coefficient: [-2.075439801899081,
  -1.9044240885094594,
  -1.5444787571822136,
  -1.5365008779591092,
@@ -80,5 +91,11 @@ Least frequent:
  -1.4281720023015625,
  -1.2832294377474074,
  -1.191112797598666]
-~
-[0.10635443346749604, 0.050554945725088424, 0.02518599829247469, 0.01402610074399317, 0.013355287230150018, 0.01305037199658495, 0.012501524576167825, 0.011342846688620564, 0.010854982314916453, 0.010611050128064398]
+
+vs.
+
+Least frequent probability: [0.10635443346749604, 0.050554945725088424, 0.02518599829247469, 0.01402610074399317, 0.013355287230150018, 0.01305037199658495, 0.012501524576167825, 0.011342846688620564, 0.010854982314916453, 0.010611050128064398]
+
+## Part 7: 
+
+* Implemented in the [`notebook.py`](./notebook.py) and [`notebook.ipynb`](./notebook.ipynb).
