@@ -97,7 +97,9 @@ public class SAT4JSolver extends SATSolver
 		// Liar and truth-teller example test code:
 //		int[][] clauses = {{-1, -2}, {2, 1}, {-2, -3}, {3, 2}, {-3, -1}, {-3, -2}, {1, 2, 3}};
 		int[][] clauses = {{1, -3},{2, 1, 3},{3,2}};
-		SAT4JSolver s = new SAT4JSolver(3);
+//		int[][] clauses = {{1, 4},{-4, -1},{3,2,1},{-1, -3}, {-2,-3},
+//				{1,3,4}, {-1,-4}, {-3,-4}};
+		SAT4JSolver s = new SAT4JSolver(4);
 		for (int i = 0; i < clauses.length; i++)
 			s.addClause(clauses[i]);
 		System.out.println("Knowledge base is satisfiable: " + s.makeQuery());
@@ -108,6 +110,6 @@ public class SAT4JSolver extends SATSolver
 		else if (result == TRUE)
 			System.out.println("Yes.");
 		else
-			System.out.println("Unknown."); 
+			System.out.println("Unknown.");
 	}
 }
