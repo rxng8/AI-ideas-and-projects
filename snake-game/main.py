@@ -2,7 +2,7 @@
 
 """
 
-    Second main file with 8 states
+    main file with 8 states
 
 """
 
