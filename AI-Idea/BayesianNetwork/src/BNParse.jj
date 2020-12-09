@@ -1,0 +1,206 @@
+/*
+ */
+
+options {
+    LOOKAHEAD=1; STATIC=false;
+}
+
+PARSER_BEGIN(BNParse)
+import java.util.ArrayList;
+
+@SuppressWarnings( "unused" )
+public class BNParse {
+    static BNNode node;
+    static boolean verbose = true;
+    
+    public static void main(String args[]) throws ParseException {
+        BNParse parser = new BNParse(System.in);
+        try {
+            parser.parseInput();
+        } catch (ParseException x) {
+            System.out.println("Terminating belief net parse.");
+            throw x;
+        }
+        if (verbose)
+            for (BNNode node : BNNode.nodes)
+                System.out.println(node);
+    }
+}
+
+PARSER_END(BNParse)
+
+SKIP :
+{
+ 	" "
+  |	"\r"
+  |	"\t"
+  |	"\n"
+}
+
+TOKEN :
+{
+          < PROB_OF: "P" >
+    |     < LPAREN: "(" >
+    |     < CONDITIONED_ON: "|" >
+    |     < COMMA: ",">
+    |     < RPAREN: ")">
+    |     < EQUALS: "=">
+    |     < CPT_BEGIN: "{" >
+    |     < CPT_END: "}">
+    |     < EVIDENCE: "evidence">
+    |     < NOT: "-" >
+}
+
+TOKEN : /* PROBABILITY VALUES (checks that parsed value <= 1.0)*/
+{
+  	< PVALUE: "0" | "1" | (( ["0", "1"] )? "." ( <DIGIT> )*) >
+}
+
+TOKEN : /* VARIABLE NAMES */
+{
+	< VARNAME: ( <LETTER> )+ ( <DIGIT> | <LETTER> )* >
+  | 	< #LETTER: ["a"-"z", "A"-"Z"] > 
+  | 	< #DIGIT: ["0" - "9"] >
+} 
+
+
+void parseInput() :
+{
+}
+{
+    cptList() ( <EVIDENCE> evidenceList() )? <EOF>
+        {
+            BNNode.computeChildren();
+        }
+}
+
+void cptList() :
+{
+}
+{
+    ( cpt() )+
+}
+
+void cpt() :
+{
+    node = new BNNode();  ArrayList<BNNode> parents; ArrayList<Double> probabilities;
+}
+{
+    <PROB_OF> <LPAREN> <VARNAME>
+        {
+            node.name = token.image;
+            for (BNNode node2 : BNNode.nodes) {
+                if (node.name.equals(node2.name)) {
+                    System.err.println("Duplicate CPT definition for node " + node.name + "\n");
+                    throw new ParseException();
+                }
+            }
+        }
+
+    ( <CONDITIONED_ON> parents=parentList() 
+        {
+            node.parents = new BNNode[parents.size()];
+            node.parents = (BNNode[]) parents.toArray(node.parents);
+            for (BNNode parent : parents)
+                if (node.name.equals(parent.name)) {
+                    System.err.println("Cannot have node " + node.name + " conditioned on itself.");
+                    throw new ParseException();
+                }
+        }
+
+    )? <RPAREN> <EQUALS> probabilities=pvalueList()
+        {
+            node.cpt = new double[probabilities.size()];  
+            for (int i = 0; i < node.cpt.length; i++)
+                node.cpt[i] = probabilities.get(i);
+            if (node.parents == null)
+                node.parents = new BNNode[0];
+            BNNode.nodes.add(node);
+        }   
+}
+
+ArrayList<BNNode> parentList():
+{ ArrayList<BNNode> parents = new ArrayList<BNNode>(); BNNode parent; }
+{
+    parent=parent() {parents.add(parent);} ( <COMMA> parent=parent() {parents.add(parent);} )* {return parents;}
+}
+
+BNNode parent():
+{ BNNode parent = null; }
+{
+    <VARNAME>
+        {
+            String parentName = token.image;
+            for (BNNode node : BNNode.nodes)
+                if (node.name.equals(parentName)) {
+                    parent = node;
+                    break;
+                }
+            if (parent == null) {
+                System.err.println("Node " + parentName + " CPT not defined before use as parent.");
+                throw new ParseException();
+            }
+            return parent;
+        }
+}
+
+
+ArrayList<Double> pvalueList():
+{ ArrayList<Double> probabilities = new ArrayList<Double>(); double probability; }
+{
+    <CPT_BEGIN> probability=pvalue() {probabilities.add(probability);} ( <COMMA> probability=pvalue() {probabilities.add(probability);} )* <CPT_END>
+    {return probabilities;}
+}
+
+double pvalue():
+{ double probability; }
+{
+    <PVALUE>
+        {
+            String valueString = token.image;
+            probability = Double.parseDouble(valueString);
+            if (probability > 1.0) {
+                System.err.println("Probability value greater than one: " + probability);
+                throw new ParseException();
+            }
+            return probability;
+        }
+}
+
+
+void evidenceList():
+{
+}
+{
+    ( evidence() )*
+}
+
+void evidence():
+{
+    String evidenceNodeName;
+    BNNode evidenceNode;
+    boolean value = true;
+}
+{
+    ( <NOT> {value = false;} )? <VARNAME>
+        {
+            evidenceNodeName = token.image;
+            evidenceNode = null;
+            for (BNNode node : BNNode.nodes)
+                if (node.name.equals(evidenceNodeName)) {
+                    evidenceNode = node;
+                    break;
+                }
+            if (evidenceNode == null) {
+                System.err.println("Node " + evidenceNodeName + " CPT not defined before use as evidence.");
+                throw new ParseException();
+            }
+            evidenceNode.isEvidence = true;
+            evidenceNode.value = value;
+        }
+}
+
+
+
+
+
