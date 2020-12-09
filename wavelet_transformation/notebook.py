@@ -566,6 +566,10 @@ show_img(img_bounding)
 
 # We have seen the overview of the image works. Now is the time to do the actual feature
 # extraction and comparison.
+
+img = np.asarray(Image.open(TEST_FILE_PATH_2))
+img2 = np.asarray(Image.open(TEST_FILE_PATH_3))
+
 # Compare between 2 image.
 print("Comparing these 2 images:")
 fig = plt.figure()
@@ -579,14 +583,13 @@ a.set_xticks([])
 a.set_yticks([])
 plt.show()
 
-img = np.asarray(Image.open(TEST_FILE_PATH_2))
 # You can change the verbose to False to not printing the processed images in the method.
 feature_vector = get_feature_vector(img, verbose=True)
 
-img2 = np.asarray(Image.open(TEST_FILE_PATH_3))
 # You can change the verbose to False to not printing the processed images in the method.
 feature_vector_2 = get_feature_vector(img2, verbose=True)
 
+# Get distance
 s = get_feature_distancce(feature_vector, feature_vector_2)
 
 print("Computed distance: " + str(s))
@@ -597,3 +600,103 @@ if same_person:
 else:
     print("The two images are the different person.")
 
+# %%
+
+# Now compare with the same person but different feeling.
+img = np.asarray(Image.open(TEST_FILE_PATH))
+img2 = np.asarray(Image.open(TEST_FILE_PATH_2))
+
+# Compare between 2 image.
+print("Comparing these 2 images:")
+fig = plt.figure()
+a = fig.add_subplot(1, 2, 1)
+a.set_xticks([])
+a.set_yticks([])
+a.imshow(img, cmap=plt.cm.gray)
+a = fig.add_subplot(1, 2, 2)
+a.imshow(img2, cmap=plt.cm.gray)
+a.set_xticks([])
+a.set_yticks([])
+plt.show()
+
+# You can change the verbose to False to not printing the processed images in the method.
+feature_vector = get_feature_vector(img, verbose=True)
+
+# You can change the verbose to False to not printing the processed images in the method.
+feature_vector_2 = get_feature_vector(img2, verbose=True)
+
+# Get distance
+s = get_feature_distancce(feature_vector, feature_vector_2)
+
+print("Computed distance: " + str(s))
+
+same_person = discrete_comparison(feature_vector, feature_vector_2)
+if same_person:
+    print("The two images are the same person.")
+else:
+    print("The two images are the different person.")
+
+# %%
+
+# Now to mass comparison.
+
+def compare_image(img1: np.ndarray, img2: np.ndarray) -> None:
+    """ Compare image with no verbose in order to mass comparing
+
+    Args:
+        img1 (np.ndarray): the numpy representation of the first image
+        img2 (np.ndarray): the numpy representation of the first image
+    """
+    print("Comparing these 2 images:")
+    fig = plt.figure()
+    a = fig.add_subplot(1, 2, 1)
+    a.set_xticks([])
+    a.set_yticks([])
+    a.imshow(img1, cmap=plt.cm.gray)
+    a = fig.add_subplot(1, 2, 2)
+    a.imshow(img2, cmap=plt.cm.gray)
+    a.set_xticks([])
+    a.set_yticks([])
+    plt.show()
+
+    # You can change the verbose to False to not printing the processed images in the method.
+    feature_vector = get_feature_vector(img1, verbose=False)
+
+    # You can change the verbose to False to not printing the processed images in the method.
+    feature_vector_2 = get_feature_vector(img2, verbose=False)
+
+    # Get distance
+    s = get_feature_distancce(feature_vector, feature_vector_2)
+
+    print("Computed distance: " + str(s))
+
+    same_person = discrete_comparison(feature_vector, feature_vector_2)
+    if same_person:
+        print("The two images are the same person.")
+    else:
+        print("The two images are the different person.")
+    print()
+
+# Mass comparing
+# There are some distinct status of each face
+status = ['glasses', 'happy', 'sad', 'sleepy', 'wink', 'leftlight', 'noglasses']
+# There are also 15 total different people in the database.
+n_subjects = 15
+batch = 20
+for i in range(batch):
+    r1 = int(np.random.randint(0, len(status) - 1))
+    r2 = int(np.random.randint(0, len(status) - 1))
+    s1 = np.random.randint(1, n_subjects)
+    s1 = "0" + str(s1) if s1 < 10 else str(s1)
+    s2 = np.random.randint(1, n_subjects)
+    s2 = "0" + str(s2) if s2 < 10 else str(s2)
+    path1 = DATASET_PATH / f"subject{s1}.{status[r1]}"
+    path2 = DATASET_PATH / f"subject{s2}.{status[r2]}"
+    try:
+        img1 = np.asarray(Image.open(path1))
+        img2 = np.asarray(Image.open(path2))
+        compare_image(img1, img2)
+    except FileNotFoundError:
+        print("File not found, next subject!")
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
