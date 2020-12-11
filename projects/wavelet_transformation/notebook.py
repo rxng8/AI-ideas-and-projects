@@ -673,8 +673,10 @@ def compare_image(img1: np.ndarray, img2: np.ndarray) -> None:
     same_person = discrete_comparison(feature_vector, feature_vector_2)
     if same_person:
         print("The two images are the same person.")
+        return True
     else:
         print("The two images are the different person.")
+        return False
     print()
 
 # Mass comparing
@@ -682,21 +684,27 @@ def compare_image(img1: np.ndarray, img2: np.ndarray) -> None:
 status = ['glasses', 'happy', 'sad', 'sleepy', 'wink', 'leftlight', 'noglasses']
 # There are also 15 total different people in the database.
 n_subjects = 15
-batch = 20
+batch = 100
+cnt_right = 0
 for i in range(batch):
     r1 = int(np.random.randint(0, len(status) - 1))
     r2 = int(np.random.randint(0, len(status) - 1))
     s1 = np.random.randint(1, n_subjects)
-    s1 = "0" + str(s1) if s1 < 10 else str(s1)
+    ss1 = "0" + str(s1) if s1 < 10 else str(s1)
     s2 = np.random.randint(1, n_subjects)
-    s2 = "0" + str(s2) if s2 < 10 else str(s2)
-    path1 = DATASET_PATH / f"subject{s1}.{status[r1]}"
-    path2 = DATASET_PATH / f"subject{s2}.{status[r2]}"
+    ss2 = "0" + str(s2) if s2 < 10 else str(s2)
+    path1 = DATASET_PATH / f"subject{ss1}.{status[r1]}"
+    path2 = DATASET_PATH / f"subject{ss2}.{status[r2]}"
+    label = s1 == s2
     try:
         img1 = np.asarray(Image.open(path1))
         img2 = np.asarray(Image.open(path2))
-        compare_image(img1, img2)
+        same = compare_image(img1, img2)
+        if label == same:
+            cnt_right += 1
     except FileNotFoundError:
         print("File not found, next subject!")
     except:
         print("Unexpected error:", sys.exc_info()[0])
+
+print("Percent right: " + str(cnt_right / float(batch) * 100) + "%")
