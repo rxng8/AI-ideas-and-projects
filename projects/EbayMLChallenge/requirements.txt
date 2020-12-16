@@ -1,0 +1,9 @@
+tk
+numpy==1.8.2
+pandas
+gensim
+tensorflow
+keras
+sklearn
+tqdm
+spacy

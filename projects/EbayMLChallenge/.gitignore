@@ -1,0 +1,7 @@
+__pycache__
+dataset
+.vscode
+.ipynb_checkpoints
+trees
+results
+dataset.pkl

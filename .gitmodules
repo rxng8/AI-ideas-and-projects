@@ -1,0 +1,3 @@
+[submodule "EbayMLChallenge"]
+	path = EbayMLChallenge
+	url = https://github.com/rxng8/EbayMLChallenge.git
