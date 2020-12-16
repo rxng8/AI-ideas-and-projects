@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import math
-
+import os
 
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
@@ -63,10 +63,9 @@ def convert_to_RGB(img: np.ndarray):
     return cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
 # %%
 
-# import os
 
-# for file_name in os.listdir(DATASET_PATH):
-#     os.rename(DATASET_PATH / file_name, DATASET_PATH / file_name[:-4])
+for file_name in os.listdir(DATASET_PATH):
+    os.rename(DATASET_PATH / file_name, DATASET_PATH / (file_name + ".jpg"))
 
 
 
@@ -83,10 +82,10 @@ print(f"image shape: {new_img1.shape}")
 
 # %%
 
-train_dataset = image_dataset_from_directory(DATASET_PATH,
+train_dataset = image_dataset_from_directory("./dataset",
                                              shuffle=True,
                                              batch_size=BATCH_SIZE,
-                                             image_size=IMG_SIZE)
+                                             image_size=(243, 320))
 
 
 
@@ -152,10 +151,13 @@ model = tf.keras.Model(inputs, out)
 # %%
 
 model.summary()
+#%%
+
+model.compile(loss='mse', metrics=['acc'])
 
 # %%
 
-loss0, accuracy0 = model.evaluate(validation_dataset)
+loss0, accuracy0 = model.evaluate(train_dataset)
 
 
 # %% 
