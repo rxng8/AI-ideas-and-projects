@@ -84,10 +84,6 @@ print(f"image shape: {new_img1.shape}")
 
 # %%
 
-new_img1
-
-# %%
-
 # read data form folder
 
 label = np.empty(shape=(0, 243, 320, 3))
@@ -108,35 +104,9 @@ ds = tf.data.Dataset.from_tensor_slices((train, label))
 print(ds.element_spec)
 
 
-# %%
-
-def gen():
-    for file_name in os.listdir(DATASET_PATH):
-        label_img = rescale(convert_to_RGB(np.asarray(Image.open(DATASET_PATH / file_name))))
-        train_img = draw_a_random_box(label_img)
-        yield 1, 0
-
-dataset = tf.data.Dataset.from_generator(
-    gen, 
-    output_types=(tf.float32, tf.float32), 
-    output_shapes=([], []))
-
-# %%
-
-def gen():
-    while True:
-        yield np.asarray([np.random.random()]), np.asarray([np.random.random()])
-
-dummyds = tf.data.Dataset.from_generator(
-    gen, 
-    output_types=(tf.float32, tf.float32), 
-    output_shapes=([1], [1]))
-
-# %%
-
-train_img, label_img = next(iter(dummyds))
+train_img, label_img = next(iter(ds))
 print(train_img)
-# %%
+
 
 print("Train img:")
 print(f"Shape: {train_img.shape}")
@@ -144,36 +114,8 @@ show_img(train_img)
 print("Label img:")
 print(f"Shape: {label_img.shape}")
 show_img(label_img)
-
 # %%
 
-inputs = tf.keras.layers.Input(shape=(1,))
-# x = tf.keras.layers.Flatten()(inputs)
-x = tf.keras.layers.Dense(1000, activation='relu')(inputs)
-outputs = tf.keras.layers.Dense(1, activation='sigmoid')(x)
-
-model = tf.keras.Model(inputs, outputs)
-model.compile(loss=tf.keras.losses.CategoricalCrossentropy, metrics=['acc'])
-model.summary()
-
-# %%
-
-model.fit(dataset, epochs=1)
-
-# %%
-
-data_augmentation = tf.keras.Sequential([
-  tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
-  tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
-])
-preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
-
-IMG_SHAPE = train_img.shape
-base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
-                                               include_top=False,
-                                               weights='imagenet')
-
-# %%
 
 # in_tensor, label_batch = np.asarray([new_img1]), [new_img1]
 class AutoEncoder(tf.keras.models.Model):
@@ -198,21 +140,30 @@ class AutoEncoder(tf.keras.models.Model):
 
 autoencoder = AutoEncoder(512)
 autoencoder.compile(loss='mse', metrics=['accuracy'])
-# %%
-autoencoder.build(input_shape=(1, *IMG_SHAPE))
+
+autoencoder.build(input_shape=(1, *IMG_SIZE))
 autoencoder.summary()
 #%%
 
 
 # %%
 
-loss0, accuracy0 = autoencoder.evaluate(ds)
-
+# loss0, accuracy0 = autoencoder.evaluate(ds)
+history = autoencoder.fit(train, label, epochs=4)
 
 # %% 
 
-c = autoencoder.call(train)
+img = autoencoder.predict(train[0:1])[0]
 
+print("Original:")
+plt.figure()
+plt.imshow(train[0])
+plt.show()
+
+print("Predicted:")
+plt.figure()
+plt.imshow(img)
+plt.show()
 
 # %%
 
@@ -259,3 +210,7 @@ plt.imshow(img)
 plt.show()
 
 # %%
+
+some_img = autoencoder.encoder.layers[1].weights[0]
+
+show_img(some_img.numpy())
