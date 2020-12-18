@@ -1,4 +1,3 @@
-
 # %%
 
 import sys
@@ -14,248 +13,131 @@ import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import cv2
-# CONFIG
-DATASET_PATH = Path("./dataset/yalefaces")
 
-TEST_FILE_NAME = "subject01.happy.jpg"
-TEST_FILE_PATH = DATASET_PATH / TEST_FILE_NAME
+import mediapipe as mp
 
-TEST_FILE_NAME_2 = "subject01.sad.jpg"
-TEST_FILE_PATH_2 = DATASET_PATH / TEST_FILE_NAME_2
+# config
 
-TEST_FILE_NAME_3 = "subject04.sad.jpg"
-TEST_FILE_PATH_3 = DATASET_PATH / TEST_FILE_NAME_3
+DATASET_PATH = Path("./dataset/lip_mpv_dataset/")
+DATASET_SRC = DATASET_PATH / "MPV_192_256"
+DATASET_FILE = "all_poseA_poseB_clothes.txt"
 
-TEST_FILE_NAME_4 = "subject04.happy.jpg"
-TEST_FILE_PATH_4 = DATASET_PATH / TEST_FILE_NAME_4
+def get_data_path():
+    train_half_front = []
+    test_half_front = []
 
-BATCH_SIZE = 16
-IMG_SIZE = (243, 320, 3)
+    with open(DATASET_PATH / DATASET_FILE, 'r') as f:
+        for line in f:
+            elems = line.split("\t")
+            assert len(elems) == 4, "Unexpected readline!"
+            if "train" in line:
+                if "person_half_front.jpg" in line and "cloth_front.jpg" in line:
+                    tmp_person = ""
+                    tmp_cloth = ""
+                    for elem in elems:
+                        if "person_half_front.jpg" in elem:
+                            tmp_person = str(DATASET_SRC / elem)
+                        if "cloth_front.jpg" in elem:
+                            tmp_cloth = str(DATASET_SRC / elem)
+                    train_half_front.append([tmp_person, tmp_cloth])
+                else:
+                    continue
+            elif "test" in line:
+                if "person_half_front.jpg" in line and "cloth_front.jpg" in line:
+                    tmp_person = ""
+                    tmp_cloth = ""
+                    for elem in elems:
+                        if "person_half_front.jpg" in elem:
+                            tmp_person = str(DATASET_SRC / elem)
+                        if "cloth_front.jpg" in elem:
+                            tmp_cloth = str(DATASET_SRC / elem)
+                    test_half_front.append([tmp_person, tmp_cloth])
+                else:
+                    continue
+            else:
+                print("Unexpected behavior!")
 
-def draw_a_random_box(img: np.ndarray, size: int=40) -> np.ndarray:
-    """[summary]
+    return np.asarray(train_half_front), np.asarray(test_half_front)
+
+def get_pose_map_generator(path_list: np.ndarray) -> None:
+    """ given a path, return a pose map
 
     Args:
-        img (np.ndarray): [description]
-        size (int): [description]
+        img (np.ndarray): 
 
     Returns:
         np.ndarray: [description]
     """
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+    mp_holistic = mp.solutions.holistic
+    pose = mp_pose.Pose(
+        static_image_mode=True, min_detection_confidence=0.5)
+    for idx, f in enumerate(path_list):
+        image = cv2.imread(f)
+        image_height, image_width, n_channels = image.shape
+        # Convert the BGR image to RGB before processing.
+        results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        if not results.pose_landmarks:
+            continue
+        # Draw pose landmarks on the image.
+        annotated_image = np.zeros(shape=(image_height, image_width, n_channels))
+        mp_drawing.draw_landmarks(
+            annotated_image, results.pose_landmarks)
+        yield np.asarray(annotated_image) / 255.0
+    pose.close()
 
-    i = np.random.randint(0, img.shape[0] - 1 - size)
-    j = np.random.randint(0, img.shape[1] - 1 - size)
-    new_img = img.copy()
-    new_img[i:i+size, j:j+size, :] = 0
-    return new_img
-
-def show_img(img: np.ndarray):
-    """ Show the image in a gray scale manner
+def get_pose_map(path: np.ndarray) -> np.ndarray:
+    """ given a path, return a pose map
 
     Args:
-        img (np.ndarray): the numpy representation of the matrix.
+        img (np.ndarray): 
+
+    Returns:
+        np.ndarray: [description]
     """
-    if len(img.shape) == 2:
-        plt.figure()
-        plt.imshow(img, cmap=plt.cm.gray)
-        plt.show()
-    elif len(img.shape) == 3:
-        plt.figure()
-        plt.imshow(img)
-        plt.show()
-    else:
-        print("Type not supported")
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+    mp_holistic = mp.solutions.holistic
+    pose = mp_pose.Pose(
+    static_image_mode=True, min_detection_confidence=0.5)
+    image = cv2.imread(path)
+    image_height, image_width, n_channels = image.shape
+    # Convert the BGR image to RGB before processing.
+    results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-def convert_to_RGB(img: np.ndarray):
-    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if results.pose_landmarks:
+        annotated_image = np.zeros(shape=(image_height, image_width, n_channels))
+        mp_drawing.draw_landmarks(
+            annotated_image, results.pose_landmarks)
+        pose.close()
+        return np.asarray(annotated_image) / 255.0
+    pose.close()
 
-def rescale(img: np.ndarray):
-    return img * 1.0/255
 
-# %%
-
-img1 = np.asarray(Image.open(TEST_FILE_PATH))
-img2 = np.asarray(Image.open(TEST_FILE_PATH))
-new_img1 = rescale(convert_to_RGB(img1))
-plt.figure()
-plt.imshow(new_img1)
-plt.show()
-print(f"image shape: {new_img1.shape}")
+def generator(dataset_path: str, file_path_list: np.ndarray):
+    pass
 
 # %%
 
-new_img1
+
+train_path, test_path = get_data_path()
+gen = get_pose_map_generator(train_path[:,0])
+img = np.asarray(next(gen))
+plt.imshow(img / 255.0)
 
 # %%
 
-# read data form folder
-
-label = np.empty(shape=(0, 243, 320, 3))
-
-for file_name in os.listdir(DATASET_PATH):
-    img = rescale(convert_to_RGB(np.asarray(Image.open(DATASET_PATH / file_name))))
-    label = np.concatenate((label, img.reshape(1, *img.shape)), axis=0)
-
-train = np.empty(shape=(0,243, 320, 3))
-
-for image in label:
-    img = draw_a_random_box(image)
-    train = np.concatenate((train, img.reshape(1, *img.shape)), axis=0)
-
-print(train.shape)
-
-ds = tf.data.Dataset.from_tensor_slices((train, label))
-print(ds.element_spec)
 
 
 # %%
 
-def gen():
-    for file_name in os.listdir(DATASET_PATH):
-        label_img = rescale(convert_to_RGB(np.asarray(Image.open(DATASET_PATH / file_name))))
-        train_img = draw_a_random_box(label_img)
-        yield 1, 0
-
-dataset = tf.data.Dataset.from_generator(
-    gen, 
-    output_types=(tf.float32, tf.float32), 
-    output_shapes=([], []))
-
-# %%
-
-def gen():
-    while True:
-        yield np.asarray([np.random.random()]), np.asarray([np.random.random()])
-
-dummyds = tf.data.Dataset.from_generator(
-    gen, 
-    output_types=(tf.float32, tf.float32), 
-    output_shapes=([1], [1]))
-
-# %%
-
-train_img, label_img = next(iter(dummyds))
-print(train_img)
-# %%
-
-print("Train img:")
-print(f"Shape: {train_img.shape}")
-show_img(train_img)
-print("Label img:")
-print(f"Shape: {label_img.shape}")
-show_img(label_img)
-
-# %%
-
-inputs = tf.keras.layers.Input(shape=(1,))
-# x = tf.keras.layers.Flatten()(inputs)
-x = tf.keras.layers.Dense(1000, activation='relu')(inputs)
-outputs = tf.keras.layers.Dense(1, activation='sigmoid')(x)
-
-model = tf.keras.Model(inputs, outputs)
-model.compile(loss=tf.keras.losses.CategoricalCrossentropy, metrics=['acc'])
-model.summary()
-
-# %%
-
-model.fit(dataset, epochs=1)
-
-# %%
-
-data_augmentation = tf.keras.Sequential([
-  tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
-  tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
-])
-preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
-
-IMG_SHAPE = train_img.shape
-base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
-                                               include_top=False,
-                                               weights='imagenet')
-
-# %%
-
-# in_tensor, label_batch = np.asarray([new_img1]), [new_img1]
-class AutoEncoder(tf.keras.models.Model):
-    def __init__(self, latent_dim, img_shape=(243, 320, 3)):
-        super().__init__()
-        self.latent_dim = latent_dim
-        self.encoder = tf.keras.Sequential([
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(latent_dim, activation='relu')
-        ])
-        self.decoder = tf.keras.Sequential([
-            tf.keras.layers.Dense(233280, activation='sigmoid'),
-            tf.keras.layers.Reshape(img_shape)
-        ])
-
-    def call(self, x):
-        encoded_tensor = self.encoder(x)
-        print(encoded_tensor.shape)
-        decoded_tensor = self.decoder(encoded_tensor)
-        print(decoded_tensor.shape)
-        return decoded_tensor
-
-autoencoder = AutoEncoder(512)
-autoencoder.compile(loss='mse', metrics=['accuracy'])
-# %%
-autoencoder.build(input_shape=(1, *IMG_SHAPE))
-autoencoder.summary()
-#%%
+# Personal representation:
+#   - Pose heatmap (18 channels) Check (3 channels)
+#   - Human segmentation (1 channel)
+#   - Face and hair segmentation (3 channels)
+# 
 
 
-# %%
-
-loss0, accuracy0 = autoencoder.evaluate(ds)
 
 
-# %% 
-
-c = autoencoder.call(train)
-
-
-# %%
-
-in_tensor = tf.keras.layers.Input(shape=IMG_SHAPE)
-
-encoder = tf.keras.Sequential([
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation='relu')
-])
-decoder = tf.keras.Sequential([
-    tf.keras.layers.Dense(233280, activation='sigmoid'),
-    tf.keras.layers.Reshape(IMG_SHAPE)
-])
-
-tensor = encoder(in_tensor)
-output = decoder(tensor)
-
-model = tf.keras.Model(in_tensor, output)
-model.compile(loss='mse', metrics=['accuracy'])
-model.summary()
-
-
-# %%
-
-history = model.fit(dataset, epochs=2)
-
-# %%
-
-plt.figure()
-plt.plot(history.history['loss'])
-
-# %%
-
-img = model.predict(train[0:1])[0]
-
-print("Original:")
-plt.figure()
-plt.imshow(train[0])
-plt.show()
-
-print("Predicted:")
-plt.figure()
-plt.imshow(img)
-plt.show()
-
-# %%
