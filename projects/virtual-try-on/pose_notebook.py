@@ -11,7 +11,7 @@ mp_pose = mp.solutions.pose
 mp_holistic = mp.solutions.holistic
 
 # config
-DATASET_PATH = Path("./dataset")
+DATASET_PATH = Path("./dataset/pose")
 
 # %%
 
@@ -61,9 +61,9 @@ for idx, file in enumerate(file_list):
   if not results.pose_landmarks:
     continue
   print(
-      f'Nose coordinates: ('
-      f'{results.pose_landmarks.landmark[mp_holistic.PoseLandmark.NOSE].x * image_width}, '
-      f'{results.pose_landmarks.landmark[mp_holistic.PoseLandmark.NOSE].y * image_hight})'
+      f'LEFT ELbow coordinates: ('
+      f'{results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_ELBOW].x * image_width}, '
+      f'{results.pose_landmarks.landmark[mp_holistic.PoseLandmark.LEFT_ELBOW].y * image_hight})'
   )
   # Draw pose landmarks on the image.
   annotated_image = image.copy()
@@ -72,3 +72,6 @@ for idx, file in enumerate(file_list):
   cv2.imwrite('./out/annotated_image' + str(idx) + '.png', annotated_image)
 pose.close()
 
+# %%
+
+image.shape
