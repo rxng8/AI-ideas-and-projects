@@ -4,3 +4,4 @@
 # **.project
 .vscode
 **dataset/
+**out/
