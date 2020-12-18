@@ -253,7 +253,7 @@ show_img(test_o)
 test_a = model.predict(tf.expand_dims(test_o, axis=0))
 show_img(np.asarray(test_a[0]))
 
-ref = test_a[0] > 0.61
+ref = test_a[0] > 0.64
 
 show_img(ref)
 # %%%
