@@ -18,7 +18,7 @@ DATASET_PATH = Path("./dataset/pose")
 # For webcam input:
 pose = mp_pose.Pose(
     min_detection_confidence=0.5, min_tracking_confidence=0.5)
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(0)
 while cap.isOpened():
   success, image = cap.read()
   if not success:
