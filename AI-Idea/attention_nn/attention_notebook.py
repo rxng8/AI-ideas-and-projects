@@ -1,6 +1,4 @@
 # %%
-
-
 """
 This is implemented based on these article: 
     Read this first (every thing about attention):
@@ -9,7 +7,7 @@ and
     what is attention:
     https://www.analyticsvidhya.com/blog/2019/11/comprehensive-guide-attention-mechanism-deep-learning/
 and
-    attention implmentation tutorial:
+    the whole notebook is implmented along side with this tutorial:
     https://www.tensorflow.org/tutorials/text/nmt_with_attention#next_steps
 and
     Can we apply 3D data to Dense?
@@ -189,13 +187,21 @@ class Attention(tf.keras.layers.Layer):
         self.V = tf.keras.layers.Dense(1)
 
     def call(self, query, values):
-
+        
+        # query_with_time_axis shape (batch_size, 1, hidden_size)
         query_with_time_axis = tf.expand_dims(query, axis=1)
+
+        # value shape (batch_size, sentence_length, hidden_size)
+        # score shape (batch_size, sentence_length, 1)
         score = self.V(tf.nn.tanh(self.W1(query_with_time_axis) + self.W2(values)))
         
+        # attention_weights shape (batch_size, sentence_length, 1)
         attention_weights = tf.nn.softmax(score, axis=1)
 
+        # context_vector shape (batch_size, sentence_length, hidden_size)
         context_vector = attention_weights * values
+
+        # context_vector shape (batch_size, hidden_size)
         context_vector = tf.reduce_sum(context_vector, axis=1)
 
         return context_vector, attention_weights
@@ -216,5 +222,158 @@ class Decoder (tf.keras.layers.Layer):
     def __init__(self, vocab_size, embedding_dims, dec_units, batch_sz):
         super().__init__()
         self.batch_sz = batch_sz
+        self.dec_units = dec_units
+        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
+        self.gru = tf.keras.layers.GRU(self.dec_units,
+                                        return_sequences=True,
+                                        return_state=True,
+                                        recurrent_initializer='glorot_uniform')
+        self.fc = tf.keras.layers.Dense(vocab_size)
+        self.attention = Attention(self.dec_units)
+
+    def call(self, x, hidden, enc_output):
+        # context_vector shape (batch_size, hidden_size)
+        # attention_weights shape (batch_size, max_sentence_length, 1)
+        context_vector, attention_weights = self.attention(hidden, enc_output)
+
+        # x shape ()
+        x = self.embedding(x)
         
+        # Concat expanded context vector to x. 
+        #       Shape (batch_size, 1, embedding_dim + hidden_size)
+        x = tf.concat([x, tf.expand_dims(context_vector, axis=1)], axis=-1)
+        
+        # Passing x to the gru
+        # output shape (batch_size, 1, hidden_size)
+        # state shape (batch_size, hidden_size)
+        output, state = self.gru(x)
+
+        # output shape (batch_size, hidden_size)
+        output = tf.reshape(output, shape=(-1, output.shape[2]))
+
+        # x shape (batch_size, vocab_size)
+        x = self.fc(output)
+
+        return x, state, attention_weights
+
+# %%
+
+decoder = Decoder(vocab_tar_size, embedding_dim, units, BATCH_SIZE)
+
+sample_decoder_output, _, _ = decoder(tf.random.uniform((BATCH_SIZE, 1)),
+                                      sample_hidden, sample_output)
+
+print ('Decoder output shape: (batch_size, vocab size) {}'.format(sample_decoder_output.shape))
+
+# %%
+
+# LOSS
+
+optimizer = tf.keras.optimizers.Adam()
+loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
+    from_logits=True, reduction='none'
+)
+
+def loss_function(real, pred):
+    mask = tf.math.logical_not(tf.math.equal(real, 0))
+    loss_ = loss_object(real, pred)
+
+    mask = tf.cast(mask, dtype=loss_.dtype)
+    loss_ *= mask
+
+    return tf.reduce_mean(loss_)
+
+sample_loss = loss_function(example_target_batch, sample_decoder_output)
+
+# %%
+
+# CHECKPOINT
+
+checkpoint_dir = './training_checkpoints'
+checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+checkpoint = tf.train.Checkpoint(optimizer=optimizer,
+                                 encoder=encoder,
+                                 decoder=decoder)
+
+# %%
+
+"""
+1. Pass the input through the encoder which return encoder output and the encoder 
+    hidden state.
+2. The encoder output, encoder hidden state and the decoder input (which is the start token) 
+    is passed to the decoder.
+3. The decoder returns the predictions and the decoder hidden state.
+4. The decoder hidden state is then passed back into the model and the predictions are used 
+    to calculate the loss.
+5. Use teacher forcing to decide the next input to the decoder.
+6. Teacher forcing is the technique where the target word is passed as the next input to the 
+    decoder.
+7. The final step is to calculate the gradients and apply it to the optimizer and backpropagate.
+
+"""
+
+@tf.function
+def train_step(inp, targ, enc_hidden):
+
+    # inp shape (batch_size, max_length_inp)
+    # targ shape (batch_size, max_length_outp)
+    # enc_hidden shape (batch_size, units(neurons))
+
+    loss = 0
+    with tf.GradientTape() as tape:
+        enc_output, enc_hidden = encoder(inp, enc_hidden)
+
+        dec_hidden = enc_hidden
+
+        # dec_input initial shape (batch_size)
+        # dec_input after expanded shape (batch_size, 1)
+        dec_input = tf.expand_dims([targ_lang.word_index['<start>']] * BATCH_SIZE, axis=1)
+
+        # Teacher forcing mechanism
+        for t in range(1, targ.shape[1]):
+            # passing the enc_output to the decoder
+            predictions, dec_hidden, _ = decoder(dec_input, dec_hidden, enc_output)
+
+            loss += loss_function(targ[:, t], predictions)
+
+            # using teacher forcing
+            dec_input = tf.expand_dims(targ[:, t], 1)
+
+        batch_loss = (loss / int(targ.shape[1]))
+        variables = encoder.trainable_variables + decoder.trainable_variables
+        gradients = tape.gradient(loss, variables)
+        optimizer.apply_gradients(zip(gradients, variables))
+
+    return batch_loss
+
+# %%
+
+EPOCHS = 10
+for epoch in range(EPOCHS):
+    start = time.time()
+
+    enc_hidden = encoder.initialize_hidden_state()
+    total_loss = 0
+
+    for (batch, (inp, targ)) in enumerate(dataset.take(steps_per_epoch)):
+        batch_loss = train_step(inp, targ, enc_hidden)
+        total_loss += batch_loss
+
+        if batch % 100 == 0:
+            print('Epoch {} Batch {} Loss {:.4f}'.format(epoch + 1,
+                                                   batch,
+                                                   batch_loss.numpy()))
+
+    # saving (checkpoint) the model every 2 epochs
+    # if (epoch + 1) % 2 == 0:
+    #     checkpoint.save(file_prefix = checkpoint_prefix)
+
+    print('Epoch {} Loss {:.4f}'.format(epoch + 1,
+                                        total_loss / steps_per_epoch))
+    print('Time taken for 1 epoch {} sec\n'.format(time.time() - start))
+
+# %%
+
+
+
 
