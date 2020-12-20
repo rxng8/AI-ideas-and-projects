@@ -15,6 +15,10 @@ from tensorflow.keras.preprocessing import image_dataset_from_directory
 import cv2
 
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+# gpus = tf.config.experimental.list_physical_devices(device_type="GPU")
+# tf.config.experimental.set_visible_devices(devices=gpus[0], device_type="GPU")
+# tf.config.experimental.set_memory_growth(device=gpus[0], enable=True)
+
 
 DATASET_PATH = Path("./dataset/human_parsing/")
 
@@ -67,25 +71,32 @@ LABEL_NAME = {
     'Right-shoe': 19
 }
 
+IMG_SHAPE = (300, 300, 3)
+PARSING_SHAPE = (288, 288, 1)
+
 def show_img(img):
     plt.figure()
     plt.imshow(img)
     plt.show()
 
 
+def load_image(image_path):
+    img = tf.io.read_file(image_path)
+    img = tf.image.decode_jpeg(img, channels=3)
+    img = tf.image.resize(img, (128, 128))
+    img = tf.keras.applications.inception_v3.preprocess_input(img)
+    return img, image_path
+
 # %%
 
 r = np.random.randint(0, 5000)
 
-TEST_INPUT = np.asarray(Image.open(TRAIN_INPUT_PATH / (TRAIN_NAME[r] + INPUT_EXT)))
-TEST_LABEL = np.asarray(Image.open(TRAIN_PARSING_PATH / (TRAIN_NAME[r] + PARSING_EXT)))
+sample_input = np.asarray(Image.open(TRAIN_INPUT_PATH / (TRAIN_NAME[r] + INPUT_EXT)))
+sample_label = np.asarray(Image.open(TRAIN_PARSING_PATH / (TRAIN_NAME[r] + PARSING_EXT)))
 
-print(f"Shape: {TEST_INPUT.shape}")
-show_img(TEST_INPUT)
-show_img(TEST_LABEL)
-
-# %%
-
+print(f"Shape: {sample_input.shape}")
+show_img(sample_input)
+show_img(sample_label)
 
 
 # %%
@@ -101,7 +112,7 @@ def train_gen():
             dtype=tf.float32)
         if len(img.shape) != 3:
             continue
-        resized_img = tf.keras.layers.experimental.preprocessing.Resizing(300, 300)(img)
+        resized_img = tf.keras.layers.experimental.preprocessing.Resizing(*IMG_SHAPE[:2])(img)
         rescaled_img = tf.keras.layers.experimental.preprocessing.Rescaling(scale=1./255)(resized_img)
         label = \
             np.expand_dims(
@@ -116,24 +127,54 @@ def train_gen():
             continue
         label[label > 0] = 1
         label = tf.convert_to_tensor(label, dtype=tf.float32)
-        resized_label = tf.keras.layers.experimental.preprocessing.Resizing(300, 300)(label)
+        resized_label = tf.keras.layers.experimental.preprocessing.Resizing(*PARSING_SHAPE[:2])(label)
+        # rescaled_label = tf.keras.layers.experimental.preprocessing.Rescaling(scale=1./255)(resized_label)
         yield rescaled_img, resized_label
+        # yield rescaled_img, rescaled_label
+
+def get_input_and_label(input_path, label_path):
+    test_o = tf.convert_to_tensor(
+        np.asarray(
+            Image.open(
+                input_path
+            )
+        )
+    )
+    test_o = tf.keras.layers.experimental.preprocessing.Resizing(*IMG_SHAPE[:2])(test_o)
+    test_o = tf.keras.layers.experimental.preprocessing.Rescaling(scale=1./255)(test_o)
+    label = \
+        np.expand_dims(
+            np.asarray(
+                Image.open(
+                    label_path
+                ),
+                dtype=float
+            ), axis=2
+        )
+    label[label > 0] = 1
+    label = tf.convert_to_tensor(label, dtype=tf.float32)
+    resized_label = tf.keras.layers.experimental.preprocessing.Resizing(*PARSING_SHAPE[:2])(label)
+    return test_o, resized_label
+
 
 # Tensorflow dataset object
 ds = tf.data.Dataset.from_generator(train_gen, output_signature=(
-    tf.TensorSpec(shape=(300, 300, 3), dtype=tf.float32),
-    tf.TensorSpec(shape=(300, 300, 1), dtype=tf.float32)
+    tf.TensorSpec(shape=IMG_SHAPE, dtype=tf.float32),
+    tf.TensorSpec(shape=PARSING_SHAPE, dtype=tf.float32)
 ))
 
 # Generator object
 train_gen_obs = train_gen()
-
+it = iter(ds)
 batchs = ds.repeat().batch(20)
 batchs
 # %%
 
-for a, b in batchs:
-    print(b.shape)
+# a, b = next(train_gen_obs)
+a, b = next(it)
+show_img(a)
+show_img(b)
+
 
 # %%
 
@@ -158,10 +199,6 @@ show_img(label)
 
 # %%
 
-# a, b = next(train_gen_obs)
-a, b = next(iter(ds))
-# show_img(a)
-# show_img(b)
 
 # %%
 
@@ -212,32 +249,69 @@ x = tf.keras.layers.UpSampling2D(
 outputs = tf.keras.layers.Conv2D(
     filters=1, 
     kernel_size=(3, 3), 
-    activation='sigmoid',
+    activation='softmax',
     padding='same') (x)
 
 
 model = tf.keras.Model(inputs, outputs)
-model.compile(loss='binary_crossentropy', metrics=['acc'])
+model.compile(loss='categorical_crossentropy', metrics=[tf.keras.metrics.MeanIoU(2)])
 model.summary()
 
 # %%
-with tf.device("/GPU:0"):
-    history = model.fit(batchs, steps_per_epoch=20, epochs=50)
+from tensorflow_examples.models.pix2pix import pix2pix
+vgg16_model = tf.keras.applications.VGG16(
+    input_shape=(300, 300, 3),
+    include_top=False,
+    weights='imagenet'
+)
+vgg16_model.trainable = False
+# vgg16_model.summary()
+
+inputs = tf.keras.Input(shape=(300, 300, 3))
+x = vgg16_model(inputs, training=False)
+
+x = pix2pix.upsample(512, 3)(x)
+x = pix2pix.upsample(256, 3)(x)
+x = pix2pix.upsample(128, 3)(x)
+x = pix2pix.upsample(64, 3)(x)
+x = pix2pix.upsample(32, 3)(x)
+x = pix2pix.upsample(16, 3)(x)
+
+out = tf.keras.layers.Conv2D(
+    1, 3, strides=2,
+    padding='same',
+    activation='sigmoid'
+) (x)
+
+
+model = tf.keras.Model(inputs, out)
+model.summary()
+model.compile(
+    # loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+    loss='binary_crossentropy',
+    metrics=['acc']
+)
+# %%
+
+history = model.fit(batchs, steps_per_epoch=20, epochs=20)
 
 
 # %%
 
 r = np.random.randint(0, 5000)
-test_o = tf.convert_to_tensor(np.asarray(Image.open(TRAIN_INPUT_PATH / (TRAIN_NAME[r] + INPUT_EXT))))
-test_o = tf.keras.layers.experimental.preprocessing.Resizing(300, 300)(test_o)
-test_o = tf.keras.layers.experimental.preprocessing.Rescaling(scale=1./255)(test_o)
-
+test_o, test_gt = get_input_and_label(
+    TRAIN_INPUT_PATH / (TRAIN_NAME[r] + INPUT_EXT),
+    TRAIN_PARSING_PATH / (TRAIN_NAME[r] + PARSING_EXT)
+)
+print("Original image:")
 show_img(test_o)
-
+print("Ground truth:")
+show_img(test_gt)
+print("Predicted segmentation:")
 test_a = model.predict(tf.expand_dims(test_o, axis=0))
 show_img(np.asarray(test_a[0]))
 
-ref = test_a[0] > 0.6
+ref = test_a[0] > 0.5
 
 show_img(ref)
 
@@ -278,3 +352,61 @@ cnt = count(6)
 # %%
 for count_batch in ds_counter.repeat().batch(10).take(10):
     print(count_batch.numpy())
+
+
+# %%
+
+
+
+
+
+
+
+
+
+
+
+
+
+# %%
+
+
+image_model = tf.keras.applications.InceptionV3(include_top=False,
+                                                weights='imagenet')
+new_input = image_model.input
+hidden_layer = image_model.layers[-1].output
+
+image_features_extract_model = tf.keras.Model(new_input, hidden_layer)
+
+# %%
+
+BATCH_SIZE = 64
+BUFFER_SIZE = 1000
+embedding_dim = 256
+units = 512
+features_shape = 2048
+attention_features_shape = 64
+
+# %%
+
+r = np.random.randint(0, 5000)
+
+sample_img, sample_img_path = load_image(str(TRAIN_INPUT_PATH / (TRAIN_NAME[r] + INPUT_EXT)))
+sample_label = tf.image.resize(np.expand_dims(np.asarray(Image.open(TRAIN_PARSING_PATH / (TRAIN_NAME[r] + PARSING_EXT))), axis=2), (128, 128))
+print(f"Shape: {sample_img.shape}")
+show_img(sample_img)
+show_img(sample_label)
+
+# %%
+
+
+
+
+
+
+
+
+
+
+
+
