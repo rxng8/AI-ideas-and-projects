@@ -317,6 +317,45 @@ show_img(ref)
 
 # %%
 
+# Save model
+
+# Include the epoch in the file name (uses `str.format`)
+checkpoint_path = "checkpoints/human_parsing_cp-20epochs.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+model.save_weights(checkpoint_path)
+
+model.save('models/human_parsing_cp-20epochs')
+
+# %%
+
+# load models
+new_model = tf.keras.models.load_model('models/human_parsing_cp-20epochs')
+
+# Check its architecture
+new_model.summary()
+
+# %%
+# Predict on new model
+r = np.random.randint(0, 5000)
+test_o, test_gt = get_input_and_label(
+    TRAIN_INPUT_PATH / (TRAIN_NAME[r] + INPUT_EXT),
+    TRAIN_PARSING_PATH / (TRAIN_NAME[r] + PARSING_EXT)
+)
+print("Original image:")
+show_img(test_o)
+print("Ground truth:")
+show_img(test_gt)
+print("Predicted segmentation:")
+test_a = new_model.predict(tf.expand_dims(test_o, axis=0))
+show_img(np.asarray(test_a[0]))
+
+ref = test_a[0] > 0.5
+
+show_img(ref)
+
+# %%
+
 lip_test = "./dataset/lip_mpv_dataset/MPV_192_256/0VB21E007/0VB21E007-T11@8=person_half_front.jpg"
 test_o = tf.convert_to_tensor(np.asarray(Image.open(lip_test)))
 test_o = tf.keras.layers.experimental.preprocessing.Resizing(300, 300)(test_o)
