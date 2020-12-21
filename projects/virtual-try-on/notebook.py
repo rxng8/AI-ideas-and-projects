@@ -17,6 +17,7 @@ import cv2
 
 import mediapipe as mp
 
+
 # config
 
 DATASET_PATH = Path("./dataset/lip_mpv_dataset/")
@@ -25,6 +26,12 @@ DATASET_FILE = "all_poseA_poseB_clothes.txt"
 
 BATCH_SIZE = 32
 IMG_SHAPE = (300, 300, 3)
+
+# model
+
+parsing_model = new_model = tf.keras.models.load_model('models/human_parsing_cp-20epochs')
+
+# %%
 
 
 def get_data_path_raw():
@@ -161,9 +168,16 @@ def get_pose_map(path) -> np.ndarray:
                 circle_radius=1
             ))
         pose.close()
-        return np.asarray(annotated_image) / 255.0
+        return tf.image.resize(np.asarray(annotated_image) / 255.0, IMG_SHAPE[:2])
     pose.close()
+    return np.zeros(shape=IMG_SHAPE)
 
+def get_human_parsing(img):
+    assert img.shape == IMG_SHAPE, "Wrong image shape"
+    prediction = parsing_model.predict(tf.expand_dims(img, axis=0))[0]
+    # show_img(prediction)
+    prediction = prediction > 0.5
+    return prediction
 
 def train_generator():
     for (idx, [img_path, cloth_path]) in enumerate(train_path):
@@ -179,19 +193,23 @@ def show_img(img):
 
 train_path, test_path = get_data_path()
 r = np.random.randint(0, train_path.shape[0] - 1)
-sample_img = np.asarray(Image.open(train_path[r, 0]))
+sample_img = tf.image.resize(
+    np.asarray(
+        Image.open(
+            train_path[r, 0]
+        )
+    ), IMG_SHAPE[:2]
+) / 255.0
+
 # gen = get_pose_map_generator(train_path[:,0])
 sample_pose = get_pose_map(train_path[r, 0])
+sample_parsing = get_human_parsing(sample_img)
 
 # img = np.asarray(next(gen))
-print("Img shape: {}".format(img.shape))
+print("Img shape: {}".format(sample_img.shape))
 show_img(sample_img)
 show_img(sample_pose)
-
-# %%
-
-
-
+show_img(sample_parsing)
 
 
 
@@ -224,13 +242,18 @@ show_img(sample_pose)
 #         name = name_list[0][1:]
 #         copyfile(DATASET_SRC / url, Path("./reference/inputs") / name)
 
+# %%
+
+# Test Human pose
+
+
 
 
 # %%
 
 # Personal representation:
 #   - Pose heatmap (18 channels) Check (3 channels)
-#   - Human segmentation (1 channel)
+#   - Human segmentation (1 channel) Check (3 channels)
 #   - Face and hair segmentation (3 channels)
 # 
 
