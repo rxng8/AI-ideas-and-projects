@@ -6,3 +6,5 @@
 **dataset/
 **out/
 **reference/
+**models/
+**checkpoints/
