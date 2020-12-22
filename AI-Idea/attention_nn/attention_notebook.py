@@ -12,7 +12,9 @@ and
 and
     Can we apply 3D data to Dense?
     https://stackoverflow.com/questions/54805345/can-i-use-a-3d-input-on-a-keras-dense-layer
-    
+and
+    about from logit:
+    https://www.xspdf.com/resolution/54136325.html
 """
 
 import numpy as np
