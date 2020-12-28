@@ -1,5 +1,5 @@
 # DCGAN experimentation
-
+@author: Alex Nguyen, Gettysburg College
 
 ## Reference: 
 - https://arxiv.org/abs/1406.2661
