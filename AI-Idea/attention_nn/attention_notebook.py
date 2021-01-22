@@ -52,7 +52,6 @@ def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn')
 
-
 def preprocess_sentence(w):
     w = unicode_to_ascii(w.lower().strip())
 
@@ -130,6 +129,10 @@ input_tensor_train, input_tensor_val, target_tensor_train, target_tensor_val = t
 # Show length
 print(len(input_tensor_train), len(target_tensor_train), len(input_tensor_val), len(target_tensor_val))
 
+# %%
+
+print(input_tensor.shape)
+print(input_tensor[100,:])
 # %%
 
 BUFFER_SIZE = len(input_tensor_train)
