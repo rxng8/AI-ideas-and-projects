@@ -45,7 +45,8 @@ path_to_zip = tf.keras.utils.get_file(
 path_to_file = os.path.dirname(path_to_zip)+"/spa-eng/spa.txt"
 
 # %%
- 
+
+
 # Converts the unicode file to ascii
 def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
