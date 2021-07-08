@@ -1,7 +1,6 @@
 # AI course work and research.
 
 * Author: Alex Nguyen.
-* Co-author: Hao Lin.
 
 ## About:
 * This repository is the collection of AI Idea implementation and research.
