@@ -19,8 +19,6 @@ from IPython import display
 
 from utils import *
 
-# %%
-
 (train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
 
 train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
@@ -71,7 +69,6 @@ def discriminator_model(input_shape=(28, 28, 1)):
 generator = generator_model()
 discriminator = discriminator_model()
 
-# %%
 generator.summary()
 discriminator.summary()
 
@@ -130,8 +127,6 @@ checkpoint = tf.train.Checkpoint(
     discriminator=discriminator
 )
 
-
-# %%
 
 BATCH_SIZE = 16
 noise_dim = 100
