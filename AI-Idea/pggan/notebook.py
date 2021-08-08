@@ -116,35 +116,6 @@ def scale_dataset(images, new_shape):
 		images_list.append(new_image)
 	return np.asarray(images_list)
 
-
-# fit the baseline model
-g_normal, d_normal, gan_normal = g_models[0][0], d_models[0][0], gan_models[0][0]
-# scale dataset to appropriate size
-gen_shape = g_normal.output_shape
-scaled_data = scale_dataset(dataset, gen_shape[1:])
-print('Scaled Data', scaled_data.shape)
-# train normal or straight-through models
-train_epochs(g_normal, d_normal, gan_normal, scaled_data, e_norm, n_batch)
-
-
-
-# process each level of growth
-for i in range(1, len(g_models)):
-	# retrieve models for this level of growth
-	[g_normal, g_fadein] = g_models[i]
-	[d_normal, d_fadein] = d_models[i]
-	[gan_normal, gan_fadein] = gan_models[i]
-	# scale dataset to appropriate size
-	gen_shape = g_normal.output_shape
-	scaled_data = scale_dataset(dataset, gen_shape[1:])
-	print('Scaled Data', scaled_data.shape)
-	# train fade-in models for next level of growth
-	train_epochs(g_fadein, d_fadein, gan_fadein, scaled_data, e_fadein, n_batch)
-	# train normal or straight-through models
-	train_epochs(g_normal, d_normal, gan_normal, scaled_data, e_norm, n_batch)
-
-
-
 # train the generator and discriminator
 def train(g_models, d_models, gan_models, dataset, latent_dim, e_norm, e_fadein, n_batch):
 	# fit the baseline model
