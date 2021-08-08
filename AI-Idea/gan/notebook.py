@@ -91,6 +91,9 @@ print(f"Discriminator result val: {discriminator_result[0]}")
 # Loss
 loss_object = tf.keras.losses.BinaryCrossentropy()
 def discriminator_loss(real, fake):
+    # Loss cho việc discriminator dự đoán ảnh thật là thật + dự đoán
+    # ảnh fake là fake
+
     # Real here is the outputs that classify the batch original images 
     # as real or fake
     real_output_loss = loss_object(tf.ones_like(real), real)
@@ -102,6 +105,9 @@ def discriminator_loss(real, fake):
     return real_output_loss + fake_output_loss
 
 def generator_loss(fake_output):
+    # Loss cho việc generator gen ra ảnh mà discriminator dự đoán
+    # ảnh đó là thật
+
     # The generator's loss quantifies how well it was able to trick the 
     # discriminator. Intuitively, if the generator is performing well, 
     # the discriminator will classify the fake images as real (or 1). 
@@ -177,7 +183,7 @@ def display_predictions(model, input_noise, epoch, step):
         plt.subplot(4, 4, i + 1)
         plt.axis('off')
         plt.imshow(deprocess_img(predictions[i, :, :, 0]), cmap='gray')
-        plt.savefig('./results/image_at_epoch_{:04d}_step_{:04d}.png'.format(epoch, step))
+        # plt.savefig('./results/image_at_epoch_{:04d}_step_{:04d}.png'.format(epoch, step))
     plt.show()
 
 

@@ -13,12 +13,6 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import cv2
 
-import mediapipe as mp
-mp_drawing = mp.solutions.drawing_utils
-mp_pose = mp.solutions.pose
-mp_holistic = mp.solutions.holistic
-mp_hands = mp.solutions.hands
-
 IMG_SHAPE = (256, 192, 3)
 LABEL_NAME = {
     'Background': 0,
